@@ -11,10 +11,12 @@ func (s *Server) AddEdges(c *gin.Context) {}
 func (s *Server) GetEdges(c *gin.Context) {
 	if c.Query("node") == "" {
 		c.JSON(400, Error{400, "'node' is a required parameter"})
+		return
 	}
 	err, edges := s.GetEdgesFromDB(c.Query("node"))
 	if err != nil {
 		c.JSON(500, Error{500, err.Error()})
+		return
 	}
 	c.JSON(200, edges)
 }

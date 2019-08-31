@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,7 +34,7 @@ func TestGetEdges(t *testing.T) {
 		Path             string
 		ExpectedCode     int
 		ExpectedResponse []string
-		Error            string
+		Error            Error
 	}
 
 	testTable := []Test{
@@ -46,7 +47,29 @@ func TestGetEdges(t *testing.T) {
 			Path:             "/edges?node=test1",
 			ExpectedCode:     200,
 			ExpectedResponse: []string{"test1", "test2"},
-			Error:            "",
+			Error:            Error{},
+		},
+		Test{
+			Name: "no node passed",
+			GetEdgesFromDB: func(s string) (error, []string) {
+				return nil, []string{"test1", "test2"}
+			},
+			Method:           "GET",
+			Path:             "/edges",
+			ExpectedCode:     400,
+			ExpectedResponse: []string{},
+			Error:            Error{400, "'node' is a required parameter"},
+		},
+		Test{
+			Name: "node does not exist",
+			GetEdgesFromDB: func(s string) (error, []string) {
+				return fmt.Errorf("node %s does not exist", s), []string{}
+			},
+			Method:           "GET",
+			Path:             "/edges?node=6",
+			ExpectedCode:     500,
+			ExpectedResponse: []string{},
+			Error:            Error{500, "node 6 does not exist"},
 		},
 	}
 
@@ -70,7 +93,7 @@ func TestGetEdges(t *testing.T) {
 				resp := Error{}
 				err := json.Unmarshal(body, &resp)
 				require.Nil(t, err)
-				assert.Equal(t, test.ExpectedResponse, resp)
+				assert.Equal(t, test.Error, resp)
 			}
 		})
 	}
