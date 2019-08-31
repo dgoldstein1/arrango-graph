@@ -47,7 +47,9 @@ export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:9520" #list of arango db endp
 #### Testing
 
 ```sh
-go test $(go list ./... | grep -v /vendor/)
+go test ./... -coverprofile=coverage.out
+# to see coverage:
+go tool cover -html=coverage.out
 ```
 
 ## Generating New Documentation

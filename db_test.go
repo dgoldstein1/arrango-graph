@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"math/rand"
 	"os"
 	"testing"
 )
@@ -29,11 +30,15 @@ func TestConnectToDB(t *testing.T) {
 	os.Setenv("GRAPH_DB_NAME", "graph-testing")
 	os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
 	os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
+	os.Setenv("GRAPH_DB_NAME", "wikipedia-graph")
 	g := ConnectToDB()
 	assert.NotNil(t, g)
 	require.Equal(t, []string{}, errors)
 	// try creating same graph again, should not fail
+	os.Setenv("GRAPH_DB_NAME", "wikipedia-graph-"+string(rand.Int()))
 	g = ConnectToDB()
 	assert.NotNil(t, g)
 	assert.Equal(t, []string{}, errors)
+	// remove graph
+
 }

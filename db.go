@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	driver "github.com/arangodb/go-driver"
 	"github.com/arangodb/go-driver/http"
 	"os"
@@ -9,7 +10,11 @@ import (
 
 // connects to arango db using env vars
 func ConnectToDB() driver.Graph {
-	db := establishConnectionToDb()
+	db, err := establishConnectionToDb()
+	if err != nil {
+		logFatalf("Could not establish connection to DB %v", err)
+		return
+	}
 	options := configureGraph()
 	// check if graph already exists
 	var graph driver.Graph
@@ -28,13 +33,13 @@ func ConnectToDB() driver.Graph {
 }
 
 // establishes connection to DB. Exists on error
-func establishConnectionToDb() driver.Database {
+func establishConnectionToDb() (driver.Database, error) {
 	// Create an HTTP connection to the database
 	conn, err := http.NewConnection(http.ConnectionConfig{
 		Endpoints: strings.Split(os.Getenv("GRAPH_DB_ARANGO_ENDPOINTS"), "|"),
 	})
 	if err != nil {
-		logFatalf("Failed to create HTTP connection: %v", err)
+		return nil, fmt.Errorf("Failed to create HTTP connection: %v", err)
 	}
 	// Create a client
 	c, err := driver.NewClient(driver.ClientConfig{
@@ -43,7 +48,7 @@ func establishConnectionToDb() driver.Database {
 	// try fetching database
 	exists, err := c.DatabaseExists(nil, os.Getenv("GRAPH_DB_NAME"))
 	if err != nil {
-		logFatalf("Could not check if databse exists create database: %v", err)
+		return nil, fmt.Errorf("Could not check if databse exists create database: %v", err)
 	}
 	// retrieve db normally
 	var db driver.Database
@@ -53,7 +58,7 @@ func establishConnectionToDb() driver.Database {
 		db, err = c.CreateDatabase(nil, os.Getenv("GRAPH_DB_NAME"), nil)
 	}
 	if err != nil {
-		logFatalf("Failed to initialize database: %v", err)
+		return nil, fmt.Errorf("Failed to initialize database: %v", err)
 	}
 	return db
 }
