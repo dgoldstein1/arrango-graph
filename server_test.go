@@ -1,10 +1,14 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -29,7 +33,6 @@ func TestGetEdges(t *testing.T) {
 		GetEdgesFromDB   func(string) (error, []string)
 		Method           string
 		Path             string
-		Body             string
 		ExpectedCode     int
 		ExpectedResponse string
 	}
@@ -38,12 +41,12 @@ func TestGetEdges(t *testing.T) {
 		Test{
 			Name: "positive test",
 			GetEdgesFromDB: func(s string) (error, []string) {
-				return nil, []string{"/wiki/test1", "/wiki/test2"}
+				return nil, []string{"test1", "test2"}
 			},
 			Method:           "GET",
 			Path:             "/edges?node=test1",
 			ExpectedCode:     200,
-			ExpectedResponse: `["test1", "test2"]`,
+			ExpectedResponse: fmt.Sprintf("[%s]", strings.Join([]string{"test1", "test2"}, ", ")),
 		},
 	}
 
@@ -57,7 +60,18 @@ func TestGetEdges(t *testing.T) {
 			req.Header.Add("Content-Type", "application/json")
 			router.ServeHTTP(w, req)
 			assert.Equal(t, test.ExpectedCode, w.Code)
-
+			body := []byte(w.Body.String())
+			if test.ExpectedCode == 200 {
+				resp := []string{}
+				err := json.Unmarshal(body, &resp)
+				require.Nil(t, err)
+				assert.Equal(t, test.ExpectedResponse, fmt.Sprintf("[%s]", strings.Join(resp, ", ")))
+			} else {
+				resp := Error{}
+				err := json.Unmarshal(body, &resp)
+				require.Nil(t, err)
+				assert.Equal(t, test.ExpectedResponse, resp)
+			}
 		})
 	}
 }
