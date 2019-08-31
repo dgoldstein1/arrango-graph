@@ -32,27 +32,27 @@ func TestConnectToDB(t *testing.T) {
 		os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
 		os.Setenv("GRAPH_DB_NAME", "wikipedia-graph")
-		g := ConnectToDB()
+		g, _, _ := ConnectToDB()
 		assert.NotNil(t, g)
 		require.Equal(t, []string{}, errors)
 		graphsToDelete = append(graphsToDelete, g)
 	})
 	t.Run("connnects to DB that already exists", func(t *testing.T) {
-		g := ConnectToDB()
+		g, _, _ := ConnectToDB()
 		assert.NotNil(t, g)
 		require.Equal(t, []string{}, errors)
 	})
 	t.Run("connects to same DB with new graph name", func(t *testing.T) {
 		dbName2 := "graph-testing-2"
 		os.Setenv("GRAPH_DB_NAME", dbName2)
-		g := ConnectToDB()
+		g, _, _ := ConnectToDB()
 		assert.NotNil(t, g)
 		require.Equal(t, []string{}, errors)
 		graphsToDelete = append(graphsToDelete, g)
 	})
 	t.Run("bad url endpoints", func(t *testing.T) {
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8000")
-		g := ConnectToDB()
+		g, _, _ := ConnectToDB()
 		assert.Nil(t, g)
 		assert.Equal(t, []string{"Could not establish connection to DB [Could not check if databse exists create database at [http://localhost:8000]: Get http://localhost:8000/_db/graph-testing-2/_api/database/current: dial tcp 127.0.0.1:8000: connect: connection refused]"}, errors)
 		errors = []string{}
@@ -60,7 +60,7 @@ func TestConnectToDB(t *testing.T) {
 	t.Run("bad db name", func(t *testing.T) {
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
 		os.Setenv("GRAPH_DB_NAME", "sldjf093ur2n093r2039d[2e9ufsdf - -CC]")
-		g := ConnectToDB()
+		g, _, _ := ConnectToDB()
 		assert.Nil(t, g)
 		assert.Equal(t, []string{"Could not establish connection to DB [Failed to initialize database: database name invalid]"}, errors)
 		errors = []string{}

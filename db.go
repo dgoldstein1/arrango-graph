@@ -9,26 +9,27 @@ import (
 )
 
 // connects to arango db using env vars
-func ConnectToDB() driver.Graph {
+func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collection) {
 	err, db := establishConnectionToDb()
 	if err != nil {
 		logFatalf("Could not establish connection to DB %v", err)
-		return nil
+		return g, nodes, edges
 	}
 	options := configureGraph()
 	// check if graph already exists
-	var graph driver.Graph
 	if exists, _ := db.GraphExists(nil, os.Getenv("GRAPH_DB_NAME")); exists {
 		// graph already exists, read current
-		graph, err = db.Graph(nil, os.Getenv("GRAPH_DB_NAME"))
+		g, err = db.Graph(nil, os.Getenv("GRAPH_DB_NAME"))
 	} else {
 		// graph does not exist, create new
-		graph, err = db.CreateGraph(nil, os.Getenv("GRAPH_DB_NAME"), &options)
+		g, err = db.CreateGraph(nil, os.Getenv("GRAPH_DB_NAME"), &options)
 	}
 	if err != nil {
 		logFatalf("Failed to create graph: %v", err)
 	}
-	return graph
+	// fetch node and edge collections
+
+	return g, nodes, edges
 }
 
 // establishes connection to DB. Exists on error
@@ -63,7 +64,7 @@ func establishConnectionToDb() (error, driver.Database) {
 func configureGraph() driver.CreateGraphOptions {
 	// define the edgeCollection to store the edges
 	var edgeDefinition driver.EdgeDefinition
-	edgeDefinition.Collection = os.Getenv("GRAPH_DB_COLLECTION_NAME")
+	edgeDefinition.Collection = "edges"
 	// define a set of collections where an edge is going out...
 	edgeDefinition.From = []string{os.Getenv("GRAPH_DB_COLLECTION_NAME")}
 	// repeat this for the collections where an edge is going into
