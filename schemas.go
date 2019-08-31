@@ -6,7 +6,9 @@ import (
 
 // server environment
 type Server struct {
-	G driver.Graph
+	G     driver.Graph
+	Nodes driver.Collection
+	Edges driver.Collection
 }
 
 type Error struct {

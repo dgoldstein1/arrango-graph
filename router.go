@@ -10,10 +10,10 @@ import (
 func SetupRouter(docs string) (*gin.Engine, *Server) {
 	// try to connect to db
 	logMsg("Connecting to DB")
-	// TODO: connect to DB
+	g, nodes, edges := ConnectToDB()
 	logMsg("Done.")
 	// create server object
-	s := Server{}
+	s := Server{g, nodes, edges}
 	// define endpoints
 	router := gin.Default()
 	router.Use(gin.Logger())

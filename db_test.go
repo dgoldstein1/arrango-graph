@@ -27,7 +27,7 @@ func TestConnectToDB(t *testing.T) {
 	}
 	graphsToDelete := []driver.Graph{}
 	t.Run("connects to db that doesnt already exist", func(t *testing.T) {
-		dbName := "graph-testing"
+		dbName := "graph-testing-db"
 		os.Setenv("GRAPH_DB_NAME", dbName)
 		os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
