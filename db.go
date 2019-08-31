@@ -76,3 +76,7 @@ func configureGraph() driver.CreateGraphOptions {
 	options.EdgeDefinitions = []driver.EdgeDefinition{edgeDefinition}
 	return options
 }
+
+func GetEdges(s string) (err error, neighbors []string) {
+	return err, neighbors
+}

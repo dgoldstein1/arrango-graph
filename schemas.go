@@ -6,9 +6,10 @@ import (
 
 // server environment
 type Server struct {
-	G     driver.Graph
-	Nodes driver.Collection
-	Edges driver.Collection
+	G              driver.Graph
+	Nodes          driver.Collection
+	Edges          driver.Collection
+	GetEdgesFromDB func(string) (error, []string)
 }
 
 type Error struct {

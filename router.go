@@ -30,7 +30,7 @@ func SetupRouter(docs string) (*gin.Engine, *Server) {
 	g, nodes, edges := ConnectToDB()
 	logMsg("Done.")
 	// create server object
-	s := Server{g, nodes, edges}
+	s := Server{g, nodes, edges, GetEdges}
 	// define endpoints
 	router := gin.Default()
 	router.Use(gin.Logger())
