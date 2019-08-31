@@ -52,6 +52,30 @@ func TestAddEdges(t *testing.T) {
 			},
 			Error: Error{},
 		},
+		Test{
+			Name: "no node passed",
+			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+				return nil, []string{"test1", "test2"}
+			},
+			Method:           "POST",
+			Path:             "/edges",
+			Body:             []byte(`{"neighbors" : ["test1", "test2"]}`),
+			ExpectedCode:     400,
+			ExpectedResponse: AddEdgesResponse{},
+			Error:            Error{400, "'node' is a required parameter"},
+		},
+		Test{
+			Name: "bad request object",
+			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+				return nil, []string{"test1", "test2"}
+			},
+			Method:           "POST",
+			Path:             "/edges?node=test",
+			Body:             []byte(`{"nesdfsd sd sd rs" : ["test1", "test2"]}`),
+			ExpectedCode:     400,
+			ExpectedResponse: AddEdgesResponse{},
+			Error:            Error{400, "Bad request"},
+		},
 	}
 
 	for _, test := range testTable {
