@@ -76,6 +76,18 @@ func TestAddEdges(t *testing.T) {
 			ExpectedResponse: AddEdgesResponse{},
 			Error:            Error{400, "Bad request"},
 		},
+		Test{
+			Name: "error adding edges",
+			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+				return fmt.Errorf("node test was not found"), []string{}
+			},
+			Method:           "POST",
+			Path:             "/edges?node=test",
+			Body:             []byte(`{"neighbors" : ["test1", "test2"]}`),
+			ExpectedCode:     500,
+			ExpectedResponse: AddEdgesResponse{},
+			Error:            Error{500, "node test was not found"},
+		},
 	}
 
 	for _, test := range testTable {
