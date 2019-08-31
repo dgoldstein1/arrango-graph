@@ -23,6 +23,9 @@ func parseEnv() {
 	requiredEnvs := []string{
 		"GRAPH_DB_STORE_PORT",
 		"GRAPH_DOCS_DIR",
+		"GRAPH_DB_COLLECTION_NAME",
+		"GRAPH_DB_ARANGO_ENDPOINTS",
+		"GRAPH_DB_NAME",
 	}
 	for _, v := range requiredEnvs {
 		if os.Getenv(v) == "" {

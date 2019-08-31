@@ -1,6 +1,6 @@
 # Destributed Graph
 
-A highly-destributed graph using (arrango db graph)[https://www.arangodb.com/docs/stable/graphs.html] for directed data.
+A highly-destributed graph using (arango db graph)[https://www.arangodb.com/docs/stable/graphs.html] for directed data.
 
 [![CircleCI](https://circleci.com/gh/dgoldstein1/destrib-graph.svg?style=svg)](https://circleci.com/gh/dgoldstein1/destrib-graph)
 [![Maintainability](https://api.codeclimate.com/v1/badges/3ef17277612516e345de/maintainability)](https://codeclimate.com/github/dgoldstein1/destrib-graph/maintainability)
@@ -24,9 +24,16 @@ docker pull dgoldstein1/destrib-graph:latest
 ```sh
 export GRAPH_DB_STORE_PORT="5001" # port served on
 export GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is served up to the browser)
+export GRAPH_DB_NAME="arango_graphs" # name of database in arango
+export GRAPH_DB_COLLECTION_NAME="wikipedia" # collection name within arango db name
+export GRAPH_DB_NAME="wikipedia-graph" # name of graph within collection
+export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:8529" #list of arango db endpoints, delimited by "|"
 ./destrib-graph server
 ```
 
+## Dependencies
+
+- arangoDB version 3.5
 
 ## Development
 
@@ -40,7 +47,9 @@ export GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is 
 #### Testing
 
 ```sh
-go test $(go list ./... | grep -v /vendor/)
+go test ./... -coverprofile=coverage.out
+# to see coverage:
+go tool cover -html=coverage.out
 ```
 
 ## Generating New Documentation
@@ -49,7 +58,6 @@ go test $(go list ./... | grep -v /vendor/)
 pip install PyYAML
 python api/swagger-yaml-to-html.py < api/swagger.yml > api/index.html
 ```
-
 
 ## Authors
 
