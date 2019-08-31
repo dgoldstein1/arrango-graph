@@ -2,13 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -34,7 +32,8 @@ func TestGetEdges(t *testing.T) {
 		Method           string
 		Path             string
 		ExpectedCode     int
-		ExpectedResponse string
+		ExpectedResponse []string
+		Error            string
 	}
 
 	testTable := []Test{
@@ -46,7 +45,8 @@ func TestGetEdges(t *testing.T) {
 			Method:           "GET",
 			Path:             "/edges?node=test1",
 			ExpectedCode:     200,
-			ExpectedResponse: fmt.Sprintf("[%s]", strings.Join([]string{"test1", "test2"}, ", ")),
+			ExpectedResponse: []string{"test1", "test2"},
+			Error:            "",
 		},
 	}
 
@@ -65,7 +65,7 @@ func TestGetEdges(t *testing.T) {
 				resp := []string{}
 				err := json.Unmarshal(body, &resp)
 				require.Nil(t, err)
-				assert.Equal(t, test.ExpectedResponse, fmt.Sprintf("[%s]", strings.Join(resp, ", ")))
+				assert.Equal(t, test.ExpectedResponse, resp)
 			} else {
 				resp := Error{}
 				err := json.Unmarshal(body, &resp)
