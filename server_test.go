@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,64 @@ func createMockRouter(s Server) *gin.Engine {
 	return router
 }
 
-func TestAddEdges(t *testing.T) {}
+func TestAddEdges(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	type Test struct {
+		Name             string
+		AddEdgesToDB     func(string, []string) error
+		Method           string
+		Path             string
+		Body             []byte
+		ExpectedCode     int
+		ExpectedResponse AddEdgesResponse
+		Error            Error
+	}
+
+	testTable := []Test{
+		Test{
+			Name: "positive test",
+			AddEdgesToDB: func(node string, neighbors []string) (e error) {
+				return nil
+			},
+			Method:       "POST",
+			Path:         "/edges?node=test",
+			Body:         []byte(`{"neighbors" : ["test1", "test2"]}`),
+			ExpectedCode: 200,
+			ExpectedResponse: AddEdgesResponse{
+				NeighborsAdded: []string{"test1", "test2"},
+			},
+			Error: Error{},
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			// create server object
+			s := Server{
+				AddEdgesToDB: test.AddEdgesToDB,
+			}
+			router := createMockRouter(s)
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(test.Method, test.Path, bytes.NewBuffer(test.Body))
+			req.Header.Add("Content-Type", "application/json")
+			router.ServeHTTP(w, req)
+			assert.Equal(t, test.ExpectedCode, w.Code)
+			body := []byte(w.Body.String())
+			if test.ExpectedCode == 200 {
+				resp := AddEdgesResponse{}
+				err := json.Unmarshal(body, &resp)
+				require.Nil(t, err)
+				assert.Equal(t, test.ExpectedResponse, resp)
+			} else {
+				resp := Error{}
+				err := json.Unmarshal(body, &resp)
+				require.Nil(t, err)
+				assert.Equal(t, test.Error, resp)
+			}
+		})
+	}
+}
 
 func TestGetEdges(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -76,7 +134,9 @@ func TestGetEdges(t *testing.T) {
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
 			// create server object
-			s := Server{nil, nil, nil, test.GetEdgesFromDB}
+			s := Server{
+				GetEdgesFromDB: test.GetEdgesFromDB,
+			}
 			router := createMockRouter(s)
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest(test.Method, test.Path, nil)

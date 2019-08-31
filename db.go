@@ -77,6 +77,10 @@ func configureGraph() driver.CreateGraphOptions {
 	return options
 }
 
-func GetEdges(s string) (err error, neighbors []string) {
+func GetEdges(node string) (err error, neighbors []string) {
 	return err, neighbors
+}
+
+func AddEdges(node string, neighbors []string) (e error) {
+	return e
 }

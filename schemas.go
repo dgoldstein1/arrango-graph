@@ -10,6 +10,7 @@ type Server struct {
 	Nodes          driver.Collection
 	Edges          driver.Collection
 	GetEdgesFromDB func(string) (error, []string)
+	AddEdgesToDB   func(string, []string) error
 }
 
 type Error struct {
@@ -21,6 +22,18 @@ type Error struct {
 type RetrievalError struct {
 	Error    string // error on lookup
 	NotFound bool   // is the error that it wasn't found?
+}
+
+/////////
+// API //
+/////////
+
+type AddEdgesRequest struct {
+	Neighbors []string `json:"neighbors"`
+}
+
+type AddEdgesResponse struct {
+	NeighborsAdded []string `json:"neighborsAdded"`
 }
 
 ////////////////////
