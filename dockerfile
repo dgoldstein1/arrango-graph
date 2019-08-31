@@ -10,6 +10,8 @@ COPY build $GOBIN
 RUN mkdir /docs
 COPY api/index.html /docs/index.html
 ENV GRAPH_DOCS_DIR="/docs/*"
+ENV GRAPH_DB_STORE_PORT=5001
+ENV GIN_MODE=release
 # set env
 ENV COMMAND "serve"
 RUN destrib-graph --version
