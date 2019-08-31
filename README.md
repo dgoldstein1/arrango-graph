@@ -24,6 +24,9 @@ docker pull dgoldstein1/destrib-graph:latest
 ```sh
 export GRAPH_DB_STORE_PORT="5001" # port served on
 export GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is served up to the browser)
+export GRAPH_DB_NAME="arrango_graphs" # name of database in arrango
+export GRAPH_DB_COLLECTION_NAME="wikipedia" # collection name within arrango db name
+export GRAPH_DB_ARRANGO_ENDPOINTS="http://localhost:9520" #list of arrango db endpoints, delimited by "|"
 ./destrib-graph server
 ```
 
