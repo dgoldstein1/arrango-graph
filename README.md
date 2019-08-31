@@ -27,7 +27,7 @@ export GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is 
 export GRAPH_DB_NAME="arango_graphs" # name of database in arango
 export GRAPH_DB_COLLECTION_NAME="wikipedia" # collection name within arango db name
 export GRAPH_DB_NAME="wikipedia-graph" # name of graph within collection
-export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:9520" #list of arango db endpoints, delimited by "|"
+export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:8529" #list of arango db endpoints, delimited by "|"
 ./destrib-graph server
 ```
 
