@@ -1,12 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
 
 func TestSetupRouter(t *testing.T) {
+	originLogPrintf := logMsg
+	defer func() { logMsg = originLogPrintf }()
+	logs := []string{}
+	logMsg = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			logs = append(logs, fmt.Sprintf(format, args))
+		} else {
+			logs = append(logs, format)
+		}
+	}
 	// setup environment
 	dbName := "graph-testing-router"
 	os.Setenv("GRAPH_DB_NAME", dbName)
@@ -17,4 +28,5 @@ func TestSetupRouter(t *testing.T) {
 	router, err := SetupRouter("./api/*")
 	assert.NotNil(t, router)
 	assert.NotNil(t, err)
+	fmt.Println(logs)
 }

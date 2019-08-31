@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	driver "github.com/arangodb/go-driver"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -25,8 +24,7 @@ func TestConnectToDB(t *testing.T) {
 			errors = append(errors, format)
 		}
 	}
-	graphsToDelete := []driver.Graph{}
-	t.Run("connects to db that doesnt already exist", func(t *testing.T) {
+	t.Run("connects to db that doesnt already exist and connects to graph that does exist", func(t *testing.T) {
 		dbName := "graph-testing-db"
 		os.Setenv("GRAPH_DB_NAME", dbName)
 		os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
@@ -37,14 +35,13 @@ func TestConnectToDB(t *testing.T) {
 		assert.NotNil(t, nodes)
 		assert.NotNil(t, edges)
 		require.Equal(t, []string{}, errors)
-		graphsToDelete = append(graphsToDelete, g)
-	})
-	t.Run("connnects to DB that already exists", func(t *testing.T) {
-		g, nodes, edges := ConnectToDB()
+		// connect to graph we just created
+		g, nodes, edges = ConnectToDB()
 		assert.NotNil(t, g)
 		assert.NotNil(t, nodes)
 		assert.NotNil(t, edges)
 		require.Equal(t, []string{}, errors)
+		require.Nil(t, g.Remove(nil))
 	})
 	t.Run("connects to same DB with new graph name", func(t *testing.T) {
 		dbName2 := "graph-testing-2"
@@ -54,7 +51,7 @@ func TestConnectToDB(t *testing.T) {
 		assert.NotNil(t, nodes)
 		assert.NotNil(t, edges)
 		require.Equal(t, []string{}, errors)
-		graphsToDelete = append(graphsToDelete, g)
+		require.Nil(t, g.Remove(nil))
 	})
 	t.Run("bad url endpoints", func(t *testing.T) {
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8000")
@@ -75,9 +72,4 @@ func TestConnectToDB(t *testing.T) {
 		assert.Equal(t, []string{"Could not establish connection to DB [Failed to initialize database: database name invalid]"}, errors)
 		errors = []string{}
 	})
-
-	// remove created graphs
-	for _, g := range graphsToDelete {
-		require.Nil(t, g.Remove(nil))
-	}
 }

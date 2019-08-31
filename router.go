@@ -2,8 +2,25 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/zsais/go-gin-prometheus"
 	"net/http"
+)
+
+var (
+	numberOfNodes = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "golang",
+			Name:      "number_of_nodes",
+			Help:      "Number of items in the collection GRAPH_DB_COLLECTION_NAME",
+		})
+
+	numberOfEdges = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "golang",
+			Name:      "number_of_edges",
+			Help:      "number of items in the 'edges' collection",
+		})
 )
 
 // entrypoint
