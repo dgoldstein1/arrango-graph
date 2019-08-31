@@ -28,7 +28,7 @@ func TestAddEdges(t *testing.T) {
 
 	type Test struct {
 		Name             string
-		AddEdgesToDB     func(string, []string) error
+		AddEdgesToDB     func(string, []string) (error, []string)
 		Method           string
 		Path             string
 		Body             []byte
@@ -40,8 +40,8 @@ func TestAddEdges(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Name: "positive test",
-			AddEdgesToDB: func(node string, neighbors []string) (e error) {
-				return nil
+			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+				return nil, []string{"test1", "test2"}
 			},
 			Method:       "POST",
 			Path:         "/edges?node=test",

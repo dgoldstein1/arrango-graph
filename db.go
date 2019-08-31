@@ -81,6 +81,6 @@ func GetEdges(node string) (err error, neighbors []string) {
 	return err, neighbors
 }
 
-func AddEdges(node string, neighbors []string) (e error) {
-	return e
+func AddEdges(node string, neighbors []string) (e error, nodesAdded []string) {
+	return e, nodesAdded
 }
