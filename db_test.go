@@ -25,6 +25,7 @@ func TestConnectToDB(t *testing.T) {
 		}
 	}
 	t.Run("connects to db that doesnt already exist and connects to graph that does exist", func(t *testing.T) {
+		errors = []string{}
 		dbName := "graph-testing-db"
 		os.Setenv("GRAPH_DB_NAME", dbName)
 		os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
@@ -44,6 +45,7 @@ func TestConnectToDB(t *testing.T) {
 		require.Nil(t, g.Remove(nil))
 	})
 	t.Run("connects to same DB with new graph name", func(t *testing.T) {
+		errors = []string{}
 		dbName2 := "graph-testing-2"
 		os.Setenv("GRAPH_DB_NAME", dbName2)
 		g, nodes, edges := ConnectToDB()
@@ -54,6 +56,7 @@ func TestConnectToDB(t *testing.T) {
 		require.Nil(t, g.Remove(nil))
 	})
 	t.Run("bad url endpoints", func(t *testing.T) {
+		errors = []string{}
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8000")
 		g, nodes, edges := ConnectToDB()
 		assert.Nil(t, nodes)
@@ -63,6 +66,7 @@ func TestConnectToDB(t *testing.T) {
 		errors = []string{}
 	})
 	t.Run("bad db name", func(t *testing.T) {
+		errors = []string{}
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
 		os.Setenv("GRAPH_DB_NAME", "sldjf093ur2n093r2039d[2e9ufsdf - -CC]")
 		g, nodes, edges := ConnectToDB()
