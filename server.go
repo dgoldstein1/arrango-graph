@@ -9,7 +9,7 @@ func (s *Server) AddEdges(c *gin.Context) {}
 
 // retrives edges to the edge "node=NAME" in uri
 func (s *Server) GetEdges(c *gin.Context) {
-	if c.Query("node") != "" {
+	if c.Query("node") == "" {
 		c.JSON(400, Error{400, "'node' is a required parameter"})
 	}
 	err, edges := s.GetEdgesFromDB(c.Query("node"))
