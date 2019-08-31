@@ -26,11 +26,9 @@ func TestConnectToDB(t *testing.T) {
 	}
 	t.Run("connects to db that doesnt already exist and connects to graph that does exist", func(t *testing.T) {
 		errors = []string{}
-		dbName := "graph-testing-db"
-		os.Setenv("GRAPH_DB_NAME", dbName)
 		os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
-		os.Setenv("GRAPH_DB_NAME", "wikipedia-graph")
+		os.Setenv("GRAPH_DB_NAME", "wikipedia-graph-1")
 		g, nodes, edges := ConnectToDB()
 		assert.NotNil(t, g)
 		assert.NotNil(t, nodes)
@@ -45,6 +43,9 @@ func TestConnectToDB(t *testing.T) {
 		require.Nil(t, g.Remove(nil))
 	})
 	t.Run("connects to same DB with new graph name", func(t *testing.T) {
+		os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
+		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
+		os.Setenv("GRAPH_DB_NAME", "wikipedia-graph-2")
 		errors = []string{}
 		dbName2 := "graph-testing-2"
 		os.Setenv("GRAPH_DB_NAME", dbName2)

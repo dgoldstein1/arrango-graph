@@ -27,15 +27,10 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 	if err != nil {
 		logFatalf("Failed to create graph: %v", err)
 	}
+
 	// initialize node and edge collections
-	nodes, err = g.VertexCollection(nil, os.Getenv("GRAPH_DB_COLLECTION_NAME"))
-	if err != nil {
-		logFatalf("Failed to get vertex collection: %v", err)
-	}
+	nodes, _ = g.VertexCollection(nil, os.Getenv("GRAPH_DB_COLLECTION_NAME"))
 	edges, _, err = g.EdgeCollection(nil, "edges")
-	if err != nil {
-		logFatalf("Failed to get edge collection: %v", err)
-	}
 	return g, nodes, edges
 }
 
@@ -75,7 +70,7 @@ func configureGraph() driver.CreateGraphOptions {
 	// define a set of collections where an edge is going out...
 	edgeDefinition.From = []string{os.Getenv("GRAPH_DB_COLLECTION_NAME")}
 	// repeat this for the collections where an edge is going into
-	edgeDefinition.To = []string{"GRAPH_DB_COLLECTION_NAME"}
+	edgeDefinition.To = []string{os.Getenv("GRAPH_DB_COLLECTION_NAME")}
 	// A graph can contain additional vertex collections, defined in the set of orphan collections
 	var options driver.CreateGraphOptions
 	options.EdgeDefinitions = []driver.EdgeDefinition{edgeDefinition}
