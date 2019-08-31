@@ -3,10 +3,21 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
+
+func createMockRouter(s Server) *gin.Engine {
+	router := gin.Default()
+	// define endpoints
+	router.POST("/edges", s.AddEdges)
+	router.GET("/edges", s.GetEdges)
+	router.GET("/shortestPath", s.ShortestPath)
+	router.GET("/export", s.Export)
+
+	return router
+}
 
 func TestAddEdges(t *testing.T) {}
 
@@ -16,7 +27,9 @@ func TestGetEdges(t *testing.T) {
 	type Test struct {
 		Name             string
 		GetEdgesFromDB   func(string) (error, []string)
-		Params           []gin.Param
+		Method           string
+		Path             string
+		Body             string
 		ExpectedCode     int
 		ExpectedResponse string
 	}
@@ -27,24 +40,24 @@ func TestGetEdges(t *testing.T) {
 			GetEdgesFromDB: func(s string) (error, []string) {
 				return nil, []string{"/wiki/test1", "/wiki/test2"}
 			},
-			Params:           []gin.Param{gin.Param{Key: "node", Value: "/wiki/test"}},
+			Method:           "GET",
+			Path:             "/edges?node=test1",
 			ExpectedCode:     200,
-			ExpectedResponse: `["/wiki/test1", "/wiki/test2"]`,
+			ExpectedResponse: `["test1", "test2"]`,
 		},
 	}
+
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
 			// create server object
 			s := Server{nil, nil, nil, test.GetEdgesFromDB}
-			// create context
+			router := createMockRouter(s)
 			w := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(httptest.NewRecorder())
-			c.Params = test.Params
-
-			s.GetEdges(c)
+			req, _ := http.NewRequest(test.Method, test.Path, nil)
+			req.Header.Add("Content-Type", "application/json")
+			router.ServeHTTP(w, req)
 			assert.Equal(t, test.ExpectedCode, w.Code)
-			b, _ := ioutil.ReadAll(w.Body)
-			assert.Equal(t, test.ExpectedResponse, string(b))
+
 		})
 	}
 }
