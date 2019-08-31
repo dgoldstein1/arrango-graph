@@ -28,6 +28,9 @@ func SetupRouter(docs string) (*gin.Engine, *Server) {
 	p.Use(router)
 	// define endpoints
 	router.POST("/edges", s.AddEdges)
+	router.GET("/edges", s.GetEdges)
+	router.GET("/shortestPath", s.ShortestPath)
+	router.GET("/export", s.Export)
 	// return server
 	return router, &s
 }

@@ -22,6 +22,8 @@ docker pull dgoldstein1/destrib-graph:latest
 ## Run it
 
 ```sh
+export GRAPH_DB_STORE_PORT="5001" # port served on
+export GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is served up to the browser)
 ./destrib-graph server
 ```
 
