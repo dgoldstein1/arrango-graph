@@ -40,6 +40,7 @@ func TestGetEdges(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(httptest.NewRecorder())
 			c.Params = test.Params
+
 			s.GetEdges(c)
 			assert.Equal(t, test.ExpectedCode, w.Code)
 			b, _ := ioutil.ReadAll(w.Body)
