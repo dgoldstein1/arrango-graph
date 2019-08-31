@@ -1,6 +1,6 @@
 # Destributed Graph
 
-A highly-destributed graph using (arrango db graph)[https://www.arangodb.com/docs/stable/graphs.html] for directed data.
+A highly-destributed graph using (arango db graph)[https://www.arangodb.com/docs/stable/graphs.html] for directed data.
 
 [![CircleCI](https://circleci.com/gh/dgoldstein1/destrib-graph.svg?style=svg)](https://circleci.com/gh/dgoldstein1/destrib-graph)
 [![Maintainability](https://api.codeclimate.com/v1/badges/3ef17277612516e345de/maintainability)](https://codeclimate.com/github/dgoldstein1/destrib-graph/maintainability)
@@ -24,15 +24,15 @@ docker pull dgoldstein1/destrib-graph:latest
 ```sh
 export GRAPH_DB_STORE_PORT="5001" # port served on
 export GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is served up to the browser)
-export GRAPH_DB_NAME="arrango_graphs" # name of database in arrango
-export GRAPH_DB_COLLECTION_NAME="wikipedia" # collection name within arrango db name
-export GRAPH_DB_ARRANGO_ENDPOINTS="http://localhost:9520" #list of arrango db endpoints, delimited by "|"
+export GRAPH_DB_NAME="arango_graphs" # name of database in arango
+export GRAPH_DB_COLLECTION_NAME="wikipedia" # collection name within arango db name
+export GRAPH_DB_arango_ENDPOINTS="http://localhost:9520" #list of arango db endpoints, delimited by "|"
 ./destrib-graph server
 ```
 
 ## Dependencies
 
-- ArrangoDB version 3.5
+- arangoDB version 3.5
 
 ## Development
 
