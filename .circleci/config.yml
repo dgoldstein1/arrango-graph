@@ -63,13 +63,10 @@ jobs:
       - run:
           name : "Push results to code coverage (master only)"
           command : |
-            if [[ "$CIRCLE_BRANCH" == "master" ]]; then
-              export CC_TEST_REPORTER_ID=3c1dfc6a2f330081e9ee3c5e694dc17c6a60310c993300f456c25dfbc9759e9d
               curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
               chmod +x ./cc-test-reporter
               ./cc-test-reporter format-coverage ./coverage.out -t gocov
               ./cc-test-reporter upload-coverage
-            fi
 
 
   # run full integration tests
