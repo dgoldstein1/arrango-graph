@@ -42,6 +42,8 @@ func SetupRouter(docs string) (*gin.Engine, *Server) {
 	})
 	// metrics
 	p := ginprometheus.NewPrometheus("gin")
+	prometheus.MustRegister(numberOfNodes)
+	prometheus.MustRegister(numberOfEdges)
 	p.Use(router)
 	// define endpoints
 	router.POST("/edges", s.AddEdges)
