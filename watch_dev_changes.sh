@@ -1,4 +1,5 @@
 #!/bin/bash
+
 while true; do
 
 # for less verbose outout
@@ -8,5 +9,5 @@ inotifywait -e modify,create,delete -r ./ && \
 	clear
 	go fmt ./... \
 		&& go build -o build/destrib-graph \
-		&& go test ./... 
+		&& go test ./...
 done

@@ -30,6 +30,9 @@ export GRAPH_DB_ARRANGO_ENDPOINTS="http://localhost:9520" #list of arrango db en
 ./destrib-graph server
 ```
 
+## Dependencies
+
+- ArrangoDB version 3.5
 
 ## Development
 
@@ -52,7 +55,6 @@ go test $(go list ./... | grep -v /vendor/)
 pip install PyYAML
 python api/swagger-yaml-to-html.py < api/swagger.yml > api/index.html
 ```
-
 
 ## Authors
 
