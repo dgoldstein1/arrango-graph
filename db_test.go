@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	driver "github.com/arangodb/go-driver"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"math/rand"
 	"os"
 	"testing"
 )
@@ -25,20 +25,49 @@ func TestConnectToDB(t *testing.T) {
 			errors = append(errors, format)
 		}
 	}
+	graphsToDelete := []driver.Graph{}
+	t.Run("connects to db that doesnt already exist", func(t *testing.T) {
+		dbName := "graph-testing"
+		os.Setenv("GRAPH_DB_NAME", dbName)
+		os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
+		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
+		os.Setenv("GRAPH_DB_NAME", "wikipedia-graph")
+		g := ConnectToDB()
+		assert.NotNil(t, g)
+		require.Equal(t, []string{}, errors)
+		graphsToDelete = append(graphsToDelete, g)
+	})
+	t.Run("connnects to DB that already exists", func(t *testing.T) {
+		g := ConnectToDB()
+		assert.NotNil(t, g)
+		require.Equal(t, []string{}, errors)
+	})
+	t.Run("connects to same DB with new graph name", func(t *testing.T) {
+		dbName2 := "graph-testing-2"
+		os.Setenv("GRAPH_DB_NAME", dbName2)
+		g := ConnectToDB()
+		assert.NotNil(t, g)
+		require.Equal(t, []string{}, errors)
+		graphsToDelete = append(graphsToDelete, g)
+	})
+	t.Run("bad url endpoints", func(t *testing.T) {
+		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8000")
+		g := ConnectToDB()
+		assert.Nil(t, g)
+		assert.Equal(t, []string{"Could not establish connection to DB [Could not check if databse exists create database at [http://localhost:8000]: Get http://localhost:8000/_db/graph-testing-2/_api/database/current: dial tcp 127.0.0.1:8000: connect: connection refused]"}, errors)
+		errors = []string{}
+	})
+	t.Run("bad db name", func(t *testing.T) {
+		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
+		os.Setenv("GRAPH_DB_NAME", "sldjf093ur2n093r2039d[2e9ufsdf - -CC]")
+		g := ConnectToDB()
+		assert.Nil(t, g)
+		assert.Equal(t, []string{"Could not establish connection to DB [Failed to initialize database: database name invalid]"}, errors)
+		errors = []string{}
+	})
 
-	// positive test
-	os.Setenv("GRAPH_DB_NAME", "graph-testing")
-	os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
-	os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
-	os.Setenv("GRAPH_DB_NAME", "wikipedia-graph")
-	g := ConnectToDB()
-	assert.NotNil(t, g)
-	require.Equal(t, []string{}, errors)
-	// try creating same graph again, should not fail
-	os.Setenv("GRAPH_DB_NAME", "wikipedia-graph-"+string(rand.Int()))
-	g = ConnectToDB()
-	assert.NotNil(t, g)
-	assert.Equal(t, []string{}, errors)
-	// remove graph
-
+	// remove created graphs
+	for _, g := range graphsToDelete {
+		require.Nil(t, g.Remove(nil))
+	}
 }

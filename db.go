@@ -10,15 +10,14 @@ import (
 
 // connects to arango db using env vars
 func ConnectToDB() driver.Graph {
-	db, err := establishConnectionToDb()
+	err, db := establishConnectionToDb()
 	if err != nil {
 		logFatalf("Could not establish connection to DB %v", err)
-		return
+		return nil
 	}
 	options := configureGraph()
 	// check if graph already exists
 	var graph driver.Graph
-	var err error
 	if exists, _ := db.GraphExists(nil, os.Getenv("GRAPH_DB_NAME")); exists {
 		// graph already exists, read current
 		graph, err = db.Graph(nil, os.Getenv("GRAPH_DB_NAME"))
@@ -33,14 +32,12 @@ func ConnectToDB() driver.Graph {
 }
 
 // establishes connection to DB. Exists on error
-func establishConnectionToDb() (driver.Database, error) {
+func establishConnectionToDb() (error, driver.Database) {
 	// Create an HTTP connection to the database
-	conn, err := http.NewConnection(http.ConnectionConfig{
-		Endpoints: strings.Split(os.Getenv("GRAPH_DB_ARANGO_ENDPOINTS"), "|"),
+	urls := strings.Split(os.Getenv("GRAPH_DB_ARANGO_ENDPOINTS"), "|")
+	conn, _ := http.NewConnection(http.ConnectionConfig{
+		Endpoints: urls,
 	})
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create HTTP connection: %v", err)
-	}
 	// Create a client
 	c, err := driver.NewClient(driver.ClientConfig{
 		Connection: conn,
@@ -48,7 +45,7 @@ func establishConnectionToDb() (driver.Database, error) {
 	// try fetching database
 	exists, err := c.DatabaseExists(nil, os.Getenv("GRAPH_DB_NAME"))
 	if err != nil {
-		return nil, fmt.Errorf("Could not check if databse exists create database: %v", err)
+		return fmt.Errorf("Could not check if databse exists create database at %v: %v", urls, err), nil
 	}
 	// retrieve db normally
 	var db driver.Database
@@ -58,9 +55,9 @@ func establishConnectionToDb() (driver.Database, error) {
 		db, err = c.CreateDatabase(nil, os.Getenv("GRAPH_DB_NAME"), nil)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Failed to initialize database: %v", err)
+		return fmt.Errorf("Failed to initialize database: %v", err), nil
 	}
-	return db
+	return nil, db
 }
 
 func configureGraph() driver.CreateGraphOptions {
