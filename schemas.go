@@ -1,7 +1,12 @@
 package main
 
+import (
+// "github.com/arangodb/go-driver"
+)
+
 // server environment
 type Server struct {
+	G int
 }
 
 type Error struct {
