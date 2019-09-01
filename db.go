@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	driver "github.com/arangodb/go-driver"
 	"github.com/arangodb/go-driver/http"
 	"os"
 	"strings"
 )
+
+var VERTICIES_COLLECTION_NAME = os.Getenv("GRAPH_DB_COLLECTION_NAME") + "verticies"
+var EDGES_COLLECTION_NAME = os.Getenv("GRAPH_DB_COLLECTION_NAME") + "edges"
+var NOT_FOUND_ERROR = "not found"
 
 // connects to arango db using env vars
 func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collection) {
@@ -15,7 +20,7 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 		logFatalf("Could not establish connection to DB %v", err)
 		return g, nodes, edges
 	}
-	options := configureGraph()
+	options, nodes, edges := configureGraph(db)
 	// check if graph already exists
 	if exists, _ := db.GraphExists(nil, os.Getenv("GRAPH_DB_NAME")); exists {
 		// graph already exists, read current
@@ -26,14 +31,6 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 	}
 	if err != nil {
 		logFatalf("Failed to create graph: %v", err)
-	}
-
-	// initialize node and edge collections
-	if nodes, err = g.VertexCollection(nil, os.Getenv("GRAPH_DB_COLLECTION_NAME")); nodes == nil || err != nil {
-		logFatalf("Could not create vertex collection %v", err)
-	}
-	if edges, _, err = g.EdgeCollection(nil, "edges"); edges == nil || err != nil {
-		logFatalf("Could not create edges collection %v", err)
 	}
 	return g, nodes, edges
 }
@@ -67,18 +64,51 @@ func establishConnectionToDb() (error, driver.Database) {
 	return nil, db
 }
 
-func configureGraph() driver.CreateGraphOptions {
+// configures collections and graph options in graph
+// panics on failure
+func configureGraph(db driver.Database) (options driver.CreateGraphOptions, nodes driver.Collection, edges driver.Collection) {
+	// create collections if they don't already exist
+	ctx := context.Background()
+	found, err := db.CollectionExists(ctx, VERTICIES_COLLECTION_NAME)
+	if err != nil {
+		logFatalf("Could not check if verticies collection exists: %v", err)
+	}
+	if !found {
+		if nodes, err = db.CreateCollection(ctx, VERTICIES_COLLECTION_NAME, &driver.CreateCollectionOptions{}); err != nil {
+			logFatalf("Could not create verticies collection: %v", err)
+		}
+	} else {
+		// read in current collection
+		if nodes, err = db.Collection(ctx, VERTICIES_COLLECTION_NAME); err != nil {
+			logFatalf("Error reading existing verticies collection: %v", err)
+		}
+	}
+	// create edges if doesn't exist
+	found, err = db.CollectionExists(ctx, EDGES_COLLECTION_NAME)
+	if err != nil {
+		logFatalf("Could not check if edges collection exists: %v", err)
+	}
+	if !found {
+		if edges, err = db.CreateCollection(ctx, EDGES_COLLECTION_NAME, &driver.CreateCollectionOptions{}); err != nil {
+			logFatalf("Could not create edges collection: %v", err)
+		}
+	} else {
+		// read in current collection
+		if edges, err = db.Collection(ctx, EDGES_COLLECTION_NAME); err != nil {
+			logFatalf("Error reading existing edges collection: %v", err)
+		}
+	}
+
 	// define the edgeCollection to store the edges
 	var edgeDefinition driver.EdgeDefinition
-	edgeDefinition.Collection = "edges"
+	edgeDefinition.Collection = EDGES_COLLECTION_NAME
 	// define a set of collections where an edge is going out...
-	edgeDefinition.From = []string{os.Getenv("GRAPH_DB_COLLECTION_NAME")}
+	edgeDefinition.From = []string{VERTICIES_COLLECTION_NAME}
 	// repeat this for the collections where an edge is going into
-	edgeDefinition.To = []string{os.Getenv("GRAPH_DB_COLLECTION_NAME")}
+	edgeDefinition.To = []string{VERTICIES_COLLECTION_NAME}
 	// A graph can contain additional vertex collections, defined in the set of orphan collections
-	var options driver.CreateGraphOptions
 	options.EdgeDefinitions = []driver.EdgeDefinition{edgeDefinition}
-	return options
+	return options, nodes, edges
 }
 
 func GetEdges(node string, s Server) (err error, neighbors []string) {
