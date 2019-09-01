@@ -99,10 +99,14 @@ func AddEdges(
 	// add all nodes to vertext collection
 	newNodes, _, err := s.Nodes.CreateDocuments(nil, nodes)
 	if err != nil {
-		logErr("Could not create documents: %v", err)
+		logErr("Could not create nodes: %v", err)
 		return err, neighbors
 	}
-
+	_, _, err = s.Nodes.CreateDocuments(nil, edges)
+	if err != nil {
+		logErr("Could not create edges: %v", err)
+		return err, neighbors
+	}
 	// add nodes back into []string{}
 	for _, n := range newNodes {
 		if n.Key != "" {
