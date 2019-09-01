@@ -29,8 +29,12 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 	}
 
 	// initialize node and edge collections
-	nodes, _ = g.VertexCollection(nil, os.Getenv("GRAPH_DB_COLLECTION_NAME"))
-	edges, _, err = g.EdgeCollection(nil, "edges")
+	if nodes, err = g.VertexCollection(nil, os.Getenv("GRAPH_DB_COLLECTION_NAME")); nodes == nil || err != nil {
+		logFatalf("Could not create vertex collection %v", err)
+	}
+	if edges, _, err = g.EdgeCollection(nil, "edges"); edges == nil || err != nil {
+		logFatalf("Could not create edges collection %v", err)
+	}
 	return g, nodes, edges
 }
 
