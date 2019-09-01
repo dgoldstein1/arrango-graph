@@ -82,5 +82,13 @@ func GetEdges(node string) (err error, neighbors []string) {
 }
 
 func AddEdges(node string, neighbors []string) (e error, nodesAdded []string) {
+	// create new nodes and edges
+	nodes := []Node{}
+	edges := []Edge{}
+	for _, n := range neighbors {
+		nodes = append(nodes, Node{n})
+		edges = append(edges, Edge{node, n})
+	}
+	// add all nodes to vertext collection
 	return e, nodesAdded
 }
