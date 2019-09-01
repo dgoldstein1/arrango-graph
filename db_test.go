@@ -100,6 +100,34 @@ func TestAddEdgesDB(t *testing.T) {
 	assert.NotNil(t, edges)
 	require.Equal(t, []string{}, errors)
 	defer require.Nil(t, g.Remove(nil))
-	t.Run("adds edges succesfully", func(t *testing.T) {
-	})
+
+	type Test struct {
+		Before             func()
+		Name               string
+		Node               string
+		Neighbors          []string
+		ExpectedError      error
+		ExpectedNodesAdded []string
+	}
+
+	testTable := []Test{
+		Test{
+			Before:             func() {},
+			Name:               "addes all new edges",
+			Node:               "new-node-1",
+			Neighbors:          []string{"new-node-2", "new-node-3"},
+			ExpectedError:      nil,
+			ExpectedNodesAdded: []string{"new-node-2", "new-node-3"},
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Before()
+			e, nAdded := AddEdges(test.Node, test.Neighbors)
+			assert.Equal(t, test.ExpectedError, e)
+			assert.Equal(t, test.ExpectedNodesAdded, nAdded)
+		})
+	}
+
 }
