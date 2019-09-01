@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +20,8 @@ func createMockRouter(s Server) *gin.Engine {
 	router.GET("/edges", s.GetEdges)
 	router.GET("/shortestPath", s.ShortestPath)
 	router.GET("/export", s.Export)
-
+	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = ioutil.Discard
 	return router
 }
 
