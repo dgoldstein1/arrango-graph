@@ -78,3 +78,28 @@ func TestConnectToDB(t *testing.T) {
 		errors = []string{}
 	})
 }
+
+func TestAddEdgesDB(t *testing.T) {
+	// mock out log.Fatalf
+	origLogFatalf := logFatalf
+	defer func() { logFatalf = origLogFatalf }()
+	errors := []string{}
+	logFatalf = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			errors = append(errors, fmt.Sprintf(format, args))
+		} else {
+			errors = append(errors, format)
+		}
+	}
+	os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
+	os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
+	os.Setenv("GRAPH_DB_NAME", "wikipedia-graph-1")
+	g, nodes, edges := ConnectToDB()
+	assert.NotNil(t, g)
+	assert.NotNil(t, nodes)
+	assert.NotNil(t, edges)
+	require.Equal(t, []string{}, errors)
+	defer require.Nil(t, g.Remove(nil))
+	t.Run("adds edges succesfully", func(t *testing.T) {
+	})
+}
