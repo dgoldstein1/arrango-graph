@@ -125,7 +125,7 @@ func TestGetEdges(t *testing.T) {
 
 	type Test struct {
 		Name             string
-		GetEdgesFromDB   func(string) (error, []string)
+		GetEdgesFromDB   func(string, Server) (error, []string)
 		Method           string
 		Path             string
 		ExpectedCode     int
@@ -136,7 +136,7 @@ func TestGetEdges(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Name: "positive test",
-			GetEdgesFromDB: func(s string) (error, []string) {
+			GetEdgesFromDB: func(s string, serv Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:           "GET",
@@ -147,7 +147,7 @@ func TestGetEdges(t *testing.T) {
 		},
 		Test{
 			Name: "no node passed",
-			GetEdgesFromDB: func(s string) (error, []string) {
+			GetEdgesFromDB: func(s string, serv Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:           "GET",
@@ -158,7 +158,7 @@ func TestGetEdges(t *testing.T) {
 		},
 		Test{
 			Name: "node does not exist",
-			GetEdgesFromDB: func(s string) (error, []string) {
+			GetEdgesFromDB: func(s string, serv Server) (error, []string) {
 				return fmt.Errorf("node %s does not exist", s), []string{}
 			},
 			Method:           "GET",

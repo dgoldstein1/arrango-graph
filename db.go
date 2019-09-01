@@ -77,7 +77,7 @@ func configureGraph() driver.CreateGraphOptions {
 	return options
 }
 
-func GetEdges(node string) (err error, neighbors []string) {
+func GetEdges(node string, s Server) (err error, neighbors []string) {
 	return err, neighbors
 }
 
@@ -102,7 +102,7 @@ func AddEdges(
 		logErr("Could not create nodes: %v", err)
 		return err, neighbors
 	}
-	_, _, err = s.Nodes.CreateDocuments(nil, edges)
+	_, _, err = s.Edges.CreateDocuments(nil, edges)
 	if err != nil {
 		logErr("Could not create edges: %v", err)
 		return err, neighbors
