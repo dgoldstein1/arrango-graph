@@ -90,7 +90,7 @@ func AddEdges(
 	nodesAdded []string,
 ) {
 	// create new nodes and edges
-	nodes := []Node{}
+	nodes := []Node{Node{node}}
 	edges := []Edge{}
 	for _, n := range neighbors {
 		nodes = append(nodes, Node{n})
@@ -107,6 +107,8 @@ func AddEdges(
 		logErr("Could not create edges: %v", err)
 		return err, neighbors
 	}
+	// get current node
+	// TODO: compare with neighbors..
 	// add nodes back into []string{}
 	for _, n := range newNodes {
 		if n.Key != "" {
