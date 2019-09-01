@@ -81,7 +81,11 @@ func GetEdges(node string) (err error, neighbors []string) {
 	return err, neighbors
 }
 
-func AddEdges(node string, neighbors []string) (e error, nodesAdded []string) {
+func AddEdges(
+	node string,
+	neighbors []string,
+	s Server,
+) (e error, nodesAdded []string) {
 	// create new nodes and edges
 	nodes := []Node{}
 	edges := []Edge{}

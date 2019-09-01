@@ -15,7 +15,7 @@ func (s *Server) AddEdges(c *gin.Context) {
 		c.JSON(400, Error{400, "Bad request"})
 		return
 	}
-	err, newNodes := s.AddEdgesToDB(c.Query("node"), request.Neighbors)
+	err, newNodes := s.AddEdgesToDB(c.Query("node"), request.Neighbors, *s)
 	if err != nil {
 		c.JSON(500, Error{500, err.Error()})
 		return

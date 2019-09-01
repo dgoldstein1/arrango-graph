@@ -30,7 +30,7 @@ func TestAddEdges(t *testing.T) {
 
 	type Test struct {
 		Name             string
-		AddEdgesToDB     func(string, []string) (error, []string)
+		AddEdgesToDB     func(string, []string, Server) (error, []string)
 		Method           string
 		Path             string
 		Body             []byte
@@ -42,7 +42,7 @@ func TestAddEdges(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Name: "positive test",
-			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+			AddEdgesToDB: func(node string, neighbors []string, s Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:       "POST",
@@ -56,7 +56,7 @@ func TestAddEdges(t *testing.T) {
 		},
 		Test{
 			Name: "no node passed",
-			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+			AddEdgesToDB: func(node string, neighbors []string, s Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:           "POST",
@@ -68,7 +68,7 @@ func TestAddEdges(t *testing.T) {
 		},
 		Test{
 			Name: "bad request object",
-			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+			AddEdgesToDB: func(node string, neighbors []string, s Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:           "POST",
@@ -80,7 +80,7 @@ func TestAddEdges(t *testing.T) {
 		},
 		Test{
 			Name: "error adding edges",
-			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+			AddEdgesToDB: func(node string, neighbors []string, s Server) (error, []string) {
 				return fmt.Errorf("node test was not found"), []string{}
 			},
 			Method:           "POST",

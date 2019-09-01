@@ -121,10 +121,15 @@ func TestAddEdgesDB(t *testing.T) {
 		},
 	}
 
+	s := Server{
+		Nodes: nodes,
+		Edges: edges,
+	}
+
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Before()
-			e, nAdded := AddEdges(test.Node, test.Neighbors)
+			e, nAdded := AddEdges(test.Node, test.Neighbors, s)
 			assert.Equal(t, test.ExpectedError, e)
 			assert.Equal(t, test.ExpectedNodesAdded, nAdded)
 		})

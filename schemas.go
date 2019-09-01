@@ -10,7 +10,7 @@ type Server struct {
 	Nodes          driver.Collection
 	Edges          driver.Collection
 	GetEdgesFromDB func(string) (error, []string)
-	AddEdgesToDB   func(string, []string) (error, []string)
+	AddEdgesToDB   func(string, []string, Server) (error, []string)
 }
 
 type Error struct {
