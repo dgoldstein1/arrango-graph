@@ -150,7 +150,7 @@ func AddEdges(
 	// add nodes back into []string{}
 	neighbors = []string{}
 	for _, n := range newNodes {
-		if n.Key != "" {
+		if n.Key != "" && n.Key != node {
 			neighbors = append(neighbors, n.Key)
 		}
 	}
