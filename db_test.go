@@ -171,7 +171,7 @@ func TestGetEdgesFromDB(t *testing.T) {
 		Test{
 			Before: func() {
 				nodes.CreateDocuments(nil, []Node{Node{"test1"}, Node{"test2"}})
-				edges.CreateDocuments(nil, []Edge{Edge{"test1", "test2"}})
+				edges.CreateDocuments(nil, []Edge{Edge{"test1", "test2", "test1->test2"}})
 			},
 			Name:              "addes all new edges",
 			Node:              "test1",

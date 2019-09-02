@@ -47,6 +47,7 @@ type Node struct {
 
 // edge between nodes
 type Edge struct {
+	Key  string `json:"_key"`
 	From string `json:"_from"`
 	To   string `json:"_to"`
 }
