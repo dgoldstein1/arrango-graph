@@ -141,8 +141,8 @@ components:
     EdgesResponse:
       type: object
       properties:
-        succesfullyProcessed:
-          description: neighbors nodes successfully added to the current node
+        neighborsAdded:
+          description: new neighbors added to the current node (which were not currently there)
           type: array
           items:
             type: string
