@@ -30,7 +30,7 @@ export GRAPH_DB_NAME="wikipedia-graph" # name of graph within collection
 export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:8529" #list of arango db endpoints, delimited by "|"
 ./destrib-graph server
 # make a test request
-curl -d '{"neighbors" : ["test1"]}' "Content-Type: application/json" -X POST http://localhost:5001/edges?node=test2
+curl -X POST -H 'Content-Type:application/json' http://localhost:5001/edges?node=test2 -d '{"neighbors" : ["test1"]}'
 
 ```
 
