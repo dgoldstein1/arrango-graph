@@ -49,20 +49,35 @@ jobs:
 
   # run unit tests
   unit-tests:
-    <<: *defaults
+    machine : true
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
+          name : "build an updated image with source code and dependencies off base image"
+          command : |
+            docker build . -t dgoldstein1/destrib-graph:unit-tests -f .circleci/testing-dockerfile-run-tests
+            docker images | grep dgoldstein1/destrib-graph:unit-tests
+      - run:
           name : "run unit tests"
           command : |
-            go test ./... -coverprofile=coverage.out
+            docker run -d \
+             -p 8529:8529 \
+             --env ARANGO_NO_AUTH=1 \
+             arangodb:3.5
+
+            docker run \
+              --network="host" \
+              dgoldstein1/destrib-graph:unit-tests
+
+
 
 
       - run:
           name : "Push results to code coverage (master only)"
           command : |
+            ls | grep *.out
             if [[ "$CIRCLE_BRANCH" == "master" ]]; then
               curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
               chmod +x ./cc-test-reporter
