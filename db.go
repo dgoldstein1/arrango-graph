@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	driver "github.com/arangodb/go-driver"
 	"github.com/arangodb/go-driver/http"
 	"os"
 	"strings"
 )
+
+var VERTICIES_COLLECTION_NAME = os.Getenv("GRAPH_DB_COLLECTION_NAME") + "verticies"
+var EDGES_COLLECTION_NAME = os.Getenv("GRAPH_DB_COLLECTION_NAME") + "edges"
 
 // connects to arango db using env vars
 func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collection) {
@@ -15,7 +19,7 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 		logFatalf("Could not establish connection to DB %v", err)
 		return g, nodes, edges
 	}
-	options := configureGraph()
+	options, nodes := configureGraph(db)
 	// check if graph already exists
 	if exists, _ := db.GraphExists(nil, os.Getenv("GRAPH_DB_NAME")); exists {
 		// graph already exists, read current
@@ -27,10 +31,10 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 	if err != nil {
 		logFatalf("Failed to create graph: %v", err)
 	}
-
-	// initialize node and edge collections
-	nodes, _ = g.VertexCollection(nil, os.Getenv("GRAPH_DB_COLLECTION_NAME"))
-	edges, _, err = g.EdgeCollection(nil, "edges")
+	// create edges if doesn't exist
+	if edges, _, err = g.EdgeCollection(nil, EDGES_COLLECTION_NAME); err != nil {
+		logFatalf("Error fetching edge collection: %v", err)
+	}
 	return g, nodes, edges
 }
 
@@ -63,24 +67,92 @@ func establishConnectionToDb() (error, driver.Database) {
 	return nil, db
 }
 
-func configureGraph() driver.CreateGraphOptions {
+// configures collections and graph options in graph
+// panics on failure
+func configureGraph(db driver.Database) (options driver.CreateGraphOptions, nodes driver.Collection) {
+	// create collections if they don't already exist
+	ctx := context.Background()
+	found, err := db.CollectionExists(ctx, VERTICIES_COLLECTION_NAME)
+	if err != nil {
+		logFatalf("Could not check if verticies collection exists: %v", err)
+	}
+	if !found {
+		if nodes, err = db.CreateCollection(ctx, VERTICIES_COLLECTION_NAME, &driver.CreateCollectionOptions{}); err != nil {
+			logFatalf("Could not create verticies collection: %v", err)
+		}
+	} else {
+		// read in current collection
+		if nodes, err = db.Collection(ctx, VERTICIES_COLLECTION_NAME); err != nil {
+			logFatalf("Error reading existing verticies collection: %v", err)
+		}
+	}
 	// define the edgeCollection to store the edges
 	var edgeDefinition driver.EdgeDefinition
-	edgeDefinition.Collection = "edges"
+	edgeDefinition.Collection = EDGES_COLLECTION_NAME
 	// define a set of collections where an edge is going out...
-	edgeDefinition.From = []string{os.Getenv("GRAPH_DB_COLLECTION_NAME")}
+	edgeDefinition.From = []string{VERTICIES_COLLECTION_NAME}
 	// repeat this for the collections where an edge is going into
-	edgeDefinition.To = []string{os.Getenv("GRAPH_DB_COLLECTION_NAME")}
+	edgeDefinition.To = []string{VERTICIES_COLLECTION_NAME}
 	// A graph can contain additional vertex collections, defined in the set of orphan collections
-	var options driver.CreateGraphOptions
 	options.EdgeDefinitions = []driver.EdgeDefinition{edgeDefinition}
-	return options
+	return options, nodes
 }
 
-func GetEdges(node string) (err error, neighbors []string) {
+func GetEdges(node string, s Server) (err error, neighbors []string) {
 	return err, neighbors
 }
 
-func AddEdges(node string, neighbors []string) (e error, nodesAdded []string) {
-	return e, nodesAdded
+func AddEdges(
+	node string,
+	neighbors []string,
+	s Server,
+) (
+	e error,
+	nodesAdded []string,
+) {
+	// create new nodes and edges
+	nodes := []Node{Node{node}}
+	edges := []Edge{}
+	for _, n := range neighbors {
+		nodes = append(nodes, Node{n})
+		edges = append(edges, Edge{
+			From: VERTICIES_COLLECTION_NAME + "/" + node,
+			To:   VERTICIES_COLLECTION_NAME + "/" + n,
+			Key:  node + "TO" + n,
+		})
+	}
+	// add all nodes to vertext collection
+	newNodes, errors, err := s.Nodes.CreateDocuments(nil, nodes)
+	if err != nil {
+		logErr("Could not create nodes: %v", err)
+		return err, []string{}
+	}
+	for i, e := range errors {
+		if e != nil {
+			// check that is not a conflict error
+			if !strings.Contains(e.Error(), "conflicting key") {
+				logErr("Error adding nodes to graph %s: %s", newNodes[i].Key, e.Error())
+			}
+			// remove from list
+			newNodes[i].Key = ""
+		}
+	}
+	metaslice, errors, err := s.Edges.CreateDocuments(nil, edges)
+	if err != nil {
+		logErr("Could not create edges: %v", err)
+		return err, []string{}
+	}
+	for i, e := range errors {
+		if e != nil && !strings.Contains(e.Error(), "conflicting key") {
+			logErr("Error adding edges to node %s: %s", metaslice[i].Key, e.Error())
+		}
+	}
+	// add nodes back into []string{}
+	neighbors = []string{}
+	for _, n := range newNodes {
+		if n.Key != "" {
+			neighbors = append(neighbors, n.Key)
+		}
+	}
+	return e, neighbors
 }

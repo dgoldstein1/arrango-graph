@@ -15,7 +15,7 @@ func (s *Server) AddEdges(c *gin.Context) {
 		c.JSON(400, Error{400, "Bad request"})
 		return
 	}
-	err, newNodes := s.AddEdgesToDB(c.Query("node"), request.Neighbors)
+	err, newNodes := s.AddEdgesToDB(c.Query("node"), request.Neighbors, *s)
 	if err != nil {
 		c.JSON(500, Error{500, err.Error()})
 		return
@@ -29,7 +29,7 @@ func (s *Server) GetEdges(c *gin.Context) {
 		c.JSON(400, Error{400, "'node' is a required parameter"})
 		return
 	}
-	err, edges := s.GetEdgesFromDB(c.Query("node"))
+	err, edges := s.GetEdgesFromDB(c.Query("node"), *s)
 	if err != nil {
 		c.JSON(500, Error{500, err.Error()})
 		return

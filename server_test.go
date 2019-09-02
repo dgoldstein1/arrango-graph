@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +20,8 @@ func createMockRouter(s Server) *gin.Engine {
 	router.GET("/edges", s.GetEdges)
 	router.GET("/shortestPath", s.ShortestPath)
 	router.GET("/export", s.Export)
-
+	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = ioutil.Discard
 	return router
 }
 
@@ -28,7 +30,7 @@ func TestAddEdges(t *testing.T) {
 
 	type Test struct {
 		Name             string
-		AddEdgesToDB     func(string, []string) (error, []string)
+		AddEdgesToDB     func(string, []string, Server) (error, []string)
 		Method           string
 		Path             string
 		Body             []byte
@@ -40,7 +42,7 @@ func TestAddEdges(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Name: "positive test",
-			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+			AddEdgesToDB: func(node string, neighbors []string, s Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:       "POST",
@@ -54,7 +56,7 @@ func TestAddEdges(t *testing.T) {
 		},
 		Test{
 			Name: "no node passed",
-			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+			AddEdgesToDB: func(node string, neighbors []string, s Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:           "POST",
@@ -66,7 +68,7 @@ func TestAddEdges(t *testing.T) {
 		},
 		Test{
 			Name: "bad request object",
-			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+			AddEdgesToDB: func(node string, neighbors []string, s Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:           "POST",
@@ -78,7 +80,7 @@ func TestAddEdges(t *testing.T) {
 		},
 		Test{
 			Name: "error adding edges",
-			AddEdgesToDB: func(node string, neighbors []string) (error, []string) {
+			AddEdgesToDB: func(node string, neighbors []string, s Server) (error, []string) {
 				return fmt.Errorf("node test was not found"), []string{}
 			},
 			Method:           "POST",
@@ -123,7 +125,7 @@ func TestGetEdges(t *testing.T) {
 
 	type Test struct {
 		Name             string
-		GetEdgesFromDB   func(string) (error, []string)
+		GetEdgesFromDB   func(string, Server) (error, []string)
 		Method           string
 		Path             string
 		ExpectedCode     int
@@ -134,7 +136,7 @@ func TestGetEdges(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Name: "positive test",
-			GetEdgesFromDB: func(s string) (error, []string) {
+			GetEdgesFromDB: func(s string, serv Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:           "GET",
@@ -145,7 +147,7 @@ func TestGetEdges(t *testing.T) {
 		},
 		Test{
 			Name: "no node passed",
-			GetEdgesFromDB: func(s string) (error, []string) {
+			GetEdgesFromDB: func(s string, serv Server) (error, []string) {
 				return nil, []string{"test1", "test2"}
 			},
 			Method:           "GET",
@@ -156,7 +158,7 @@ func TestGetEdges(t *testing.T) {
 		},
 		Test{
 			Name: "node does not exist",
-			GetEdgesFromDB: func(s string) (error, []string) {
+			GetEdgesFromDB: func(s string, serv Server) (error, []string) {
 				return fmt.Errorf("node %s does not exist", s), []string{}
 			},
 			Method:           "GET",

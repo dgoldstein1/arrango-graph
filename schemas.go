@@ -9,8 +9,8 @@ type Server struct {
 	G              driver.Graph
 	Nodes          driver.Collection
 	Edges          driver.Collection
-	GetEdgesFromDB func(string) (error, []string)
-	AddEdgesToDB   func(string, []string) (error, []string)
+	GetEdgesFromDB func(string, Server) (error, []string)
+	AddEdgesToDB   func(string, []string, Server) (error, []string)
 }
 
 type Error struct {
@@ -47,6 +47,7 @@ type Node struct {
 
 // edge between nodes
 type Edge struct {
+	Key  string `json:"_key"`
 	From string `json:"_from"`
 	To   string `json:"_to"`
 }

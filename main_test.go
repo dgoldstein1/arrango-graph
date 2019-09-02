@@ -44,6 +44,8 @@ func TestParseEnv(t *testing.T) {
 	}
 
 	for _, v := range requiredEnvs {
+		temp := os.Getenv(v)
+		defer os.Setenv(v, temp)
 		os.Setenv(v, "1000")
 	}
 	// positive test
@@ -52,6 +54,8 @@ func TestParseEnv(t *testing.T) {
 
 	for _, v := range requiredEnvs {
 		t.Run("it validates "+v, func(t *testing.T) {
+			temp := os.Getenv(v)
+			defer os.Setenv(v, temp)
 			errors = []string{}
 			os.Unsetenv(v)
 			parseEnv()
