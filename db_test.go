@@ -62,7 +62,7 @@ func TestConnectToDB(t *testing.T) {
 		assert.Nil(t, nodes)
 		assert.Nil(t, edges)
 		assert.Nil(t, g)
-		assert.Equal(t, []string{"Could not establish connection to DB [Could not check if databse exists create database at [http://localhost:8000]: Get http://localhost:8000/_db/test/_api/database/current: dial tcp 127.0.0.1:8000: connect: connection refused]"}, errors)
+		assert.Equal(t, 1, len(errors))
 		errors = []string{}
 	})
 	t.Run("bad db name", func(t *testing.T) {
