@@ -62,7 +62,7 @@ func TestConnectToDB(t *testing.T) {
 		assert.Nil(t, nodes)
 		assert.Nil(t, edges)
 		assert.Nil(t, g)
-		assert.Equal(t, []string{"Could not establish connection to DB [Could not check if databse exists create database at [http://localhost:8000]: Get http://localhost:8000/_db/test/_api/database/current: dial tcp 127.0.0.1:8000: connect: connection refused]"}, errors)
+		assert.Equal(t, 1, len(errors))
 		errors = []string{}
 	})
 	t.Run("bad db name", func(t *testing.T) {
@@ -131,7 +131,7 @@ func TestAddEdgesDB(t *testing.T) {
 		Test{
 			Before: func() {
 				g, nodes, edges = ConnectToDB()
-				nodes.RemoveDocuments(nil, []string{"new-node-2", "new-node-3"})
+				nodes.RemoveDocuments(nil, []string{"new-node-2"})
 				edges.RemoveDocument(nil, "new-node-2TOnew-node-3")
 			},
 			Name:                     "only returns new nodes",
@@ -165,6 +165,9 @@ func TestAddEdgesDB(t *testing.T) {
 			assert.Equal(t, test.ExpectedError, e)
 			assert.Equal(t, test.ExpectedErrorsLogged, errors)
 			assert.Equal(t, test.ExpectedNodesAddedLength, len(nAdded))
+			if test.ExpectedNodesAddedLength != len(nAdded) {
+				fmt.Printf("nAdded : %v \n", nAdded)
+			}
 		})
 	}
 
