@@ -1,6 +1,6 @@
 # Destributed Graph
 
-A highly-destributed graph using (arango db graph)[https://www.arangodb.com/docs/stable/graphs.html] for directed data.
+A highly-destributed graph using [arango db graph](https://www.arangodb.com/docs/stable/graphs.html) for directed data.
 
 [![CircleCI](https://circleci.com/gh/dgoldstein1/destrib-graph.svg?style=svg)](https://circleci.com/gh/dgoldstein1/destrib-graph)
 [![Maintainability](https://api.codeclimate.com/v1/badges/3ef17277612516e345de/maintainability)](https://codeclimate.com/github/dgoldstein1/destrib-graph/maintainability)
