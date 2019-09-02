@@ -58,7 +58,6 @@ jobs:
           name : "build an updated image with source code and dependencies off base image"
           command : |
             docker build . -t dgoldstein1/destrib-graph:unit-tests -f .circleci/testing-dockerfile-run-tests
-            docker images | grep dgoldstein1/destrib-graph:unit-tests
       - run:
           name : "run unit tests"
           command : |
