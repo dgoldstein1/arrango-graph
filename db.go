@@ -11,7 +11,6 @@ import (
 
 var VERTICIES_COLLECTION_NAME = os.Getenv("GRAPH_DB_COLLECTION_NAME") + "verticies"
 var EDGES_COLLECTION_NAME = os.Getenv("GRAPH_DB_COLLECTION_NAME") + "edges"
-var NOT_FOUND_ERROR = "not found"
 
 // connects to arango db using env vars
 func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collection) {
@@ -34,7 +33,7 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 	}
 	// create edges if doesn't exist
 	if edges, _, err = g.EdgeCollection(nil, EDGES_COLLECTION_NAME); err != nil {
-		logFatalf("Error fetching edge collection", err)
+		logFatalf("Error fetching edge collection: %v", err)
 	}
 	return g, nodes, edges
 }
@@ -87,7 +86,6 @@ func configureGraph(db driver.Database) (options driver.CreateGraphOptions, node
 			logFatalf("Error reading existing verticies collection: %v", err)
 		}
 	}
-
 	// define the edgeCollection to store the edges
 	var edgeDefinition driver.EdgeDefinition
 	edgeDefinition.Collection = EDGES_COLLECTION_NAME
@@ -124,10 +122,17 @@ func AddEdges(
 		})
 	}
 	// add all nodes to vertext collection
-	newNodes, _, err := s.Nodes.CreateDocuments(nil, nodes)
+	newNodes, errors, err := s.Nodes.CreateDocuments(nil, nodes)
 	if err != nil {
 		logErr("Could not create nodes: %v", err)
 		return err, neighbors
+	}
+	for i, e := range errors {
+		if err != nil {
+			logErr("Error adding nodes to graph %v: %v", newNodes[i], e)
+			// remove from list
+			newNodes[i].Key = ""
+		}
 	}
 	metaslice, errors, err := s.Edges.CreateDocuments(nil, edges)
 	if err != nil {
@@ -139,9 +144,7 @@ func AddEdges(
 			logErr("Error adding edges to node %v: %v", metaslice[i], e)
 		}
 	}
-	// get current node
-	// TODO: compare with neighbors..
-	// add nodes back into []string{}
+	// add nodes back into []string{}	// get current node
 	temp := make(map[string]bool)
 	for _, n := range newNodes {
 		if n.Key != "" && !temp[n.Key] {
