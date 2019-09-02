@@ -81,10 +81,10 @@ func TestConnectToDB(t *testing.T) {
 
 func TestAddEdgesDB(t *testing.T) {
 	// mock out log.Fatalf
-	origLogFatalf := logFatalf
-	defer func() { logFatalf = origLogFatalf }()
+	logErrOriginal := logErr
+	defer func() { logErr = logErrOriginal }()
 	errors := []string{}
-	logFatalf = func(format string, args ...interface{}) {
+	logErr = func(format string, args ...interface{}) {
 		if len(args) > 0 {
 			errors = append(errors, fmt.Sprintf(format, args))
 		} else {
@@ -105,22 +105,44 @@ func TestAddEdgesDB(t *testing.T) {
 	defer require.Nil(t, g.Remove(nil))
 
 	type Test struct {
-		Before             func()
-		Name               string
-		Node               string
-		Neighbors          []string
-		ExpectedError      error
-		ExpectedNodesAdded []string
+		Before               func()
+		Name                 string
+		Node                 string
+		Neighbors            []string
+		ExpectedError        error
+		ExpectedNodesAdded   []string
+		ExpectedErrorsLogged []string
 	}
 
 	testTable := []Test{
 		Test{
-			Before:             func() {},
-			Name:               "addes all new edges",
-			Node:               "new-node-1",
-			Neighbors:          []string{"new-node-2", "new-node-3"},
-			ExpectedError:      nil,
-			ExpectedNodesAdded: []string{"new-node-2", "new-node-3"},
+			Before: func() {
+				g, nodes, edges = ConnectToDB()
+			},
+			Name:                 "addes all new edges",
+			Node:                 "new-node-1",
+			Neighbors:            []string{"new-node-2", "new-node-3"},
+			ExpectedError:        nil,
+			ExpectedNodesAdded:   []string{"new-node-2", "new-node-3"},
+			ExpectedErrorsLogged: []string{},
+		},
+		// Test{
+		// 	Before:               func() {},
+		// 	Name:                 "returns correct neighbors nodes",
+		// 	Node:                 "new-node-1",
+		// 	Neighbors:            []string{"new-node-3", "new-node-4"},
+		// 	ExpectedError:        nil,
+		// 	ExpectedNodesAdded:   []string{"new-node-3", "new-node-4"},
+		// 	ExpectedErrorsLogged: []string{},
+		// },
+		Test{
+			Before:               func() {},
+			Name:                 "bad node name",
+			Node:                 "new-node-1-OSF#OK2O$ kCADK c/// adcaKf@",
+			Neighbors:            []string{"new-node-3", "new-node-4"},
+			ExpectedError:        nil,
+			ExpectedNodesAdded:   []string{},
+			ExpectedErrorsLogged: []string{"Error adding nodes to graph [ illegal document key]: %!s(MISSING)", "Error adding edges to node [ document not found]: %!s(MISSING)", "Error adding edges to node [ document not found]: %!s(MISSING)"},
 		},
 	}
 
@@ -131,9 +153,11 @@ func TestAddEdgesDB(t *testing.T) {
 
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
+			errors = []string{}
 			test.Before()
 			e, nAdded := AddEdges(test.Node, test.Neighbors, s)
 			assert.Equal(t, test.ExpectedError, e)
+			assert.Equal(t, test.ExpectedErrorsLogged, errors)
 			assert.Equal(t, test.ExpectedNodesAdded, nAdded)
 		})
 	}

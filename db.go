@@ -125,11 +125,14 @@ func AddEdges(
 	newNodes, errors, err := s.Nodes.CreateDocuments(nil, nodes)
 	if err != nil {
 		logErr("Could not create nodes: %v", err)
-		return err, neighbors
+		return err, []string{}
 	}
 	for i, e := range errors {
-		if err != nil {
-			logErr("Error adding nodes to graph %v: %v", newNodes[i], e)
+		if e != nil {
+			// check that is not a conflict error
+			if !strings.Contains(e.Error(), "conflicting key") {
+				logErr("Error adding nodes to graph %s: %s", newNodes[i].Key, e.Error())
+			}
 			// remove from list
 			newNodes[i].Key = ""
 		}
@@ -137,19 +140,18 @@ func AddEdges(
 	metaslice, errors, err := s.Edges.CreateDocuments(nil, edges)
 	if err != nil {
 		logErr("Could not create edges: %v", err)
-		return err, neighbors
+		return err, []string{}
 	}
 	for i, e := range errors {
-		if err != nil {
-			logErr("Error adding edges to node %v: %v", metaslice[i], e)
+		if e != nil && !strings.Contains(e.Error(), "conflicting key") {
+			logErr("Error adding edges to node %s: %s", metaslice[i].Key, e.Error())
 		}
 	}
-	// add nodes back into []string{}	// get current node
-	temp := make(map[string]bool)
+	// add nodes back into []string{}
+	neighbors = []string{}
 	for _, n := range newNodes {
-		if n.Key != "" && !temp[n.Key] {
+		if n.Key != "" {
 			neighbors = append(neighbors, n.Key)
-			temp[n.Key] = true
 		}
 	}
 	return e, neighbors
