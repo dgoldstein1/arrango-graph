@@ -6,4 +6,4 @@ env GRAPH_DB_NAME "circle-testing-db"
 env GRAPH_DB_COLLECTION_NAME "circle-testing-graph"
 env GRAPH_DB_ARANGO_ENDPOINTS "http://127.0.0.1:8529"
 
-CMD printenv && go test ./...
+CMD  bash .circleci/run_unit_tests.sh

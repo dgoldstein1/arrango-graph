@@ -69,21 +69,9 @@ jobs:
 
             docker run \
               --network="host" \
+              --env CIRCLE_BRANCH=$CIRCLE_BRANCH \
+              --env CC_TEST_REPORTER_ID \
               dgoldstein1/destrib-graph:unit-tests
-
-
-
-
-      - run:
-          name : "Push results to code coverage (master only)"
-          command : |
-            ls | grep *.out
-            if [[ "$CIRCLE_BRANCH" == "master" ]]; then
-              curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-              chmod +x ./cc-test-reporter
-              ./cc-test-reporter format-coverage ./coverage.out -t gocov
-              ./cc-test-reporter upload-coverage
-            fi
 
 
   # run full integration tests
