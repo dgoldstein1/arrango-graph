@@ -233,7 +233,7 @@ func TestGetEdgesFromDB(t *testing.T) {
 			Name:              "gets edges of node in graph",
 			Node:              "test1",
 			ExpectedError:     nil,
-			ExpectedNeighbors: []string{"new-node-2", "new-node-3"},
+			ExpectedNeighbors: []string{"test2", "test3"},
 		},
 	}
 

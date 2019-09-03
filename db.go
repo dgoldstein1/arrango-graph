@@ -100,20 +100,29 @@ func configureGraph(db driver.Database) (options driver.CreateGraphOptions, node
 
 // get destination of edges  which have FROM: "node"
 func GetEdges(node string, s Server) (err error, neighbors []string) {
-	ctx := context.Background()
-	query := fmt.Sprintf(
-		"FOR edge IN %s FILTER edge._from == @name RETURN d",
-		EDGES_COLLECTION_NAME,
-	)
+	// search edges which are leaving this node, going to another
+	// Return the node they're going to
+	query := "FOR edge IN edges FILTER edge._from == @node RETURN edge._to"
 	bindVars := map[string]interface{}{
-		"name": node,
+		"node": VERTICIES_COLLECTION_NAME + "/" + node,
 	}
-	cursor, err := s.DB.Query(ctx, query, bindVars)
+	cursor, err := s.DB.Query(context.Background(), query, bindVars)
 	if err != nil {
 		logErr("Error launching query %s: %v", query, err)
 		return err, neighbors
 	}
-	cursor.Close()
+	defer cursor.Close()
+	// read out results
+	for cursor.HasMore() {
+		var n string
+		if _, err := cursor.ReadDocument(nil, &n); err != nil {
+			logErr(err.Error())
+		} else {
+			nodeName := strings.TrimPrefix(n, VERTICIES_COLLECTION_NAME+"/")
+			neighbors = append(neighbors, nodeName)
+		}
+
+	}
 	return err, neighbors
 }
 
