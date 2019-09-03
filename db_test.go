@@ -131,7 +131,7 @@ func TestAddEdgesDB(t *testing.T) {
 		Test{
 			Before: func() {
 				g, nodes, edges = ConnectToDB()
-				nodes.RemoveDocuments(nil, []string{"new-node-2"})
+				nodes.RemoveDocuments(nil, []string{"new-node-2", "new-node-4"})
 				edges.RemoveDocument(nil, "new-node-2TOnew-node-3")
 			},
 			Name:                     "only returns new nodes",
