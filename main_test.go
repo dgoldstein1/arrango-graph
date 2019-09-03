@@ -38,7 +38,7 @@ func TestParseEnv(t *testing.T) {
 	requiredEnvs := []string{
 		"GRAPH_DB_STORE_PORT",
 		"GRAPH_DOCS_DIR",
-		"GRAPH_DB_ARANGO_ENDPOINTS",
+		"GRAPH_DB_ARANGO_ENDPOINT",
 		"GRAPH_DB_NAME",
 	}
 

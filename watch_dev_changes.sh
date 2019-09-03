@@ -4,7 +4,7 @@
 docker-compose up -d
 
 export GRAPH_DB_NAME="test" # name of database in arango
-export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:8529" #list of arango db endpoints
+export GRAPH_DB_ARANGO_ENDPOINT="http://localhost:8529" #list of arango db endpoints
 
 while true; do
 

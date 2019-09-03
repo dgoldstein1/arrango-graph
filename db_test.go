@@ -12,7 +12,7 @@ import (
 // these need to be set before running tests:
 //
 // export GRAPH_DB_NAME="arango_graphs" # name of database in arango
-// export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:8529" #list of arango db endpoints
+// export GRAPH_DB_ARANGO_ENDPOINT="http://localhost:8529" #list of arango db endpoints
 // export GRAPH_DB_NAME="wikipedia-graph" # name of graph within collection
 func TestConnectToDB(t *testing.T) {
 	// mock out log.Fatalf
@@ -55,9 +55,9 @@ func TestConnectToDB(t *testing.T) {
 	})
 	t.Run("bad url endpoints", func(t *testing.T) {
 		errors = []string{}
-		temp := os.Getenv("GRAPH_DB_ARANGO_ENDPOINTS")
-		defer os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", temp)
-		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8000")
+		temp := os.Getenv("GRAPH_DB_ARANGO_ENDPOINT")
+		defer os.Setenv("GRAPH_DB_ARANGO_ENDPOINT", temp)
+		os.Setenv("GRAPH_DB_ARANGO_ENDPOINT", "http://localhost:8000")
 		g, nodes, edges, _ := ConnectToDB()
 		assert.Nil(t, nodes)
 		assert.Nil(t, edges)
