@@ -25,8 +25,7 @@ docker pull dgoldstein1/destrib-graph:latest
 export GRAPH_DB_STORE_PORT="5001" # port served on
 export GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is served up to the browser)
 export GRAPH_DB_NAME="arango_graphs" # name of database in arango
-export GRAPH_DB_COLLECTION_NAME="wikipedia" # collection name within arango db name
-export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:8529" #list of arango db endpoints, delimited by "|"
+export GRAPH_DB_ARANGO_ENDPOINT="http://localhost:8529" #arango db endpoint
 ./destrib-graph server
 # make a test request
 curl -X POST -H 'Content-Type:application/json' http://localhost:5001/edges?node=test2 -d '{"neighbors" : ["test1"]}'

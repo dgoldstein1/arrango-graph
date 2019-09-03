@@ -19,7 +19,7 @@ func TestSetupRouter(t *testing.T) {
 		}
 	}
 	// setup environment
-	logErr(os.Getenv("GRAPH_DB_ARANGO_ENDPOINTS"))
+	logErr(os.Getenv("GRAPH_DB_ARANGO_ENDPOINT"))
 	router, err := SetupRouter("./api/*")
 	assert.NotNil(t, router)
 	assert.NotNil(t, err)
