@@ -12,7 +12,6 @@ import (
 // these need to be set before running tests:
 //
 // export GRAPH_DB_NAME="arango_graphs" # name of database in arango
-// export GRAPH_DB_COLLECTION_NAME="wikipedia" # collection name within arango db name
 // export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:8529" #list of arango db endpoints
 // export GRAPH_DB_NAME="wikipedia-graph" # name of graph within collection
 func TestConnectToDB(t *testing.T) {
@@ -93,11 +92,8 @@ func TestAddEdgesDB(t *testing.T) {
 		}
 	}
 	temp := os.Getenv("GRAPH_DB_NAME")
-	temp1 := os.Getenv("GRAPH_DB_COLLECTION_NAME")
 	defer os.Setenv("GRAPH_DB_NAME", temp)
-	defer os.Setenv("GRAPH_DB_COLLECTION_NAME", temp1)
 	os.Setenv("GRAPH_DB_NAME", "testing-add-edges-to-graph")
-	os.Setenv("GRAPH_DB_COLLECTION_NAME", "addEdgesTesting")
 	g, nodes, edges, _ := ConnectToDB()
 	assert.NotNil(t, g)
 	assert.NotNil(t, nodes)
