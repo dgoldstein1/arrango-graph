@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -28,13 +29,13 @@ func TestConnectToDB(t *testing.T) {
 	}
 	t.Run("connects to db that doesnt already exist and connects to graph that does exist", func(t *testing.T) {
 		errors = []string{}
-		g, nodes, edges := ConnectToDB()
+		g, nodes, edges, _ := ConnectToDB()
 		assert.NotNil(t, g)
 		assert.NotNil(t, nodes)
 		assert.NotNil(t, edges)
 		require.Equal(t, []string{}, errors)
 		// connect to graph we just created
-		g, nodes, edges = ConnectToDB()
+		g, nodes, edges, _ = ConnectToDB()
 		assert.NotNil(t, g)
 		assert.NotNil(t, nodes)
 		assert.NotNil(t, edges)
@@ -46,7 +47,7 @@ func TestConnectToDB(t *testing.T) {
 		defer os.Setenv("GRAPH_DB_NAME", temp)
 		os.Setenv("GRAPH_DB_NAME", "testing-graph-2")
 		errors = []string{}
-		g, nodes, edges := ConnectToDB()
+		g, nodes, edges, _ := ConnectToDB()
 		assert.NotNil(t, g)
 		assert.NotNil(t, nodes)
 		assert.NotNil(t, edges)
@@ -58,7 +59,7 @@ func TestConnectToDB(t *testing.T) {
 		temp := os.Getenv("GRAPH_DB_ARANGO_ENDPOINTS")
 		defer os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", temp)
 		os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8000")
-		g, nodes, edges := ConnectToDB()
+		g, nodes, edges, _ := ConnectToDB()
 		assert.Nil(t, nodes)
 		assert.Nil(t, edges)
 		assert.Nil(t, g)
@@ -70,7 +71,7 @@ func TestConnectToDB(t *testing.T) {
 		temp := os.Getenv("GRAPH_DB_NAME")
 		defer os.Setenv("GRAPH_DB_NAME", temp)
 		os.Setenv("GRAPH_DB_NAME", "sldjf093ur2n093r2039d[2e9ufsdf - -CC]")
-		g, nodes, edges := ConnectToDB()
+		g, nodes, edges, _ := ConnectToDB()
 		assert.Nil(t, nodes)
 		assert.Nil(t, edges)
 		assert.Nil(t, g)
@@ -97,7 +98,7 @@ func TestAddEdgesDB(t *testing.T) {
 	defer os.Setenv("GRAPH_DB_COLLECTION_NAME", temp1)
 	os.Setenv("GRAPH_DB_NAME", "testing-add-edges-to-graph")
 	os.Setenv("GRAPH_DB_COLLECTION_NAME", "addEdgesTesting")
-	g, nodes, edges := ConnectToDB()
+	g, nodes, edges, _ := ConnectToDB()
 	assert.NotNil(t, g)
 	assert.NotNil(t, nodes)
 	assert.NotNil(t, edges)
@@ -117,7 +118,7 @@ func TestAddEdgesDB(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Before: func() {
-				g, nodes, edges = ConnectToDB()
+				g, nodes, edges, _ = ConnectToDB()
 				nodes.RemoveDocuments(nil, []string{"new-node-2", "new-node-3"})
 				edges.RemoveDocument(nil, "new-node-2TOnew-node-3")
 			},
@@ -130,7 +131,7 @@ func TestAddEdgesDB(t *testing.T) {
 		},
 		Test{
 			Before: func() {
-				g, nodes, edges = ConnectToDB()
+				g, nodes, edges, _ = ConnectToDB()
 				nodes.RemoveDocuments(nil, []string{"new-node-2", "new-node-4"})
 				edges.RemoveDocument(nil, "new-node-2TOnew-node-3")
 			},
@@ -188,12 +189,12 @@ func TestGetEdgesFromDB(t *testing.T) {
 	temp := os.Getenv("GRAPH_DB_NAME")
 	defer os.Setenv("GRAPH_DB_NAME", temp)
 	os.Setenv("GRAPH_DB_NAME", "testing-get-edges-from-graph")
-	g, nodes, edges := ConnectToDB()
+	g, nodes, edges, db := ConnectToDB()
 	assert.NotNil(t, g)
 	assert.NotNil(t, nodes)
 	assert.NotNil(t, edges)
 	require.Equal(t, []string{}, errors)
-	defer require.Nil(t, g.Remove(nil))
+	// defer require.Nil(t, g.Remove(nil))
 
 	type Test struct {
 		Before            func()
@@ -207,13 +208,26 @@ func TestGetEdgesFromDB(t *testing.T) {
 		Test{
 			Before: func() {
 				nodes.CreateDocuments(nil, []Node{Node{"test1"}, Node{"test2"}, Node{"test3"}})
-				edges.CreateDocuments(nil, []Edge{
+				meta, errors, err := edges.CreateDocuments(nil, []Edge{
 					Edge{
 						From: VERTICIES_COLLECTION_NAME + "/test1",
 						To:   VERTICIES_COLLECTION_NAME + "/test2",
-						Key:  VERTICIES_COLLECTION_NAME + "-test1TOtest2",
+						Key:  "test1TOtest2",
+					},
+					Edge{
+						From: VERTICIES_COLLECTION_NAME + "/test1",
+						To:   VERTICIES_COLLECTION_NAME + "/test3",
+						Key:  "test1TOtest3",
 					},
 				})
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				for i, e := range errors {
+					if !strings.Contains(e.Error(), "conflicting key") {
+						fmt.Printf("Could not add edge to graph %s: %v", meta[i].ID, e)
+					}
+				}
 
 			},
 			Name:              "gets edges of node in graph",
@@ -226,6 +240,7 @@ func TestGetEdgesFromDB(t *testing.T) {
 	s := Server{
 		Nodes: nodes,
 		Edges: edges,
+		DB:    db,
 	}
 
 	for _, test := range testTable {
