@@ -235,6 +235,13 @@ func TestGetEdgesFromDB(t *testing.T) {
 			ExpectedError:     nil,
 			ExpectedNeighbors: []string{"test2", "test3"},
 		},
+		Test{
+			Before:            func() {},
+			Name:              "node doesn't exist",
+			Node:              "sdf s/d/fas/ dfa/s####",
+			ExpectedError:     nil,
+			ExpectedNeighbors: []string(nil),
+		},
 	}
 
 	s := Server{
