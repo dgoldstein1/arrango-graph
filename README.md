@@ -30,7 +30,7 @@ export GRAPH_DB_ARANGO_ENDPOINTS="http://localhost:8529" #list of arango db endp
 ./destrib-graph server
 # make a test request
 curl -X POST -H 'Content-Type:application/json' http://localhost:5001/edges?node=test2 -d '{"neighbors" : ["test1"]}'
-
+curl localhost:5001/edges?node=test2
 ```
 
 ## Dependencies

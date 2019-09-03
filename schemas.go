@@ -9,6 +9,7 @@ type Server struct {
 	G              driver.Graph
 	Nodes          driver.Collection
 	Edges          driver.Collection
+	DB             driver.Database
 	GetEdgesFromDB func(string, Server) (error, []string)
 	AddEdgesToDB   func(string, []string, Server) (error, []string)
 }

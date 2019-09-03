@@ -9,15 +9,15 @@ import (
 	"strings"
 )
 
-var VERTICIES_COLLECTION_NAME = os.Getenv("GRAPH_DB_COLLECTION_NAME") + "verticies"
-var EDGES_COLLECTION_NAME = os.Getenv("GRAPH_DB_COLLECTION_NAME") + "edges"
+var VERTICIES_COLLECTION_NAME = "verticies"
+var EDGES_COLLECTION_NAME = "edges"
 
 // connects to arango db using env vars
-func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collection) {
+func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collection, db driver.Database) {
 	err, db := establishConnectionToDb()
 	if err != nil {
 		logFatalf("Could not establish connection to DB %v", err)
-		return g, nodes, edges
+		return g, nodes, edges, db
 	}
 	options, nodes := configureGraph(db)
 	// check if graph already exists
@@ -35,7 +35,7 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 	if edges, _, err = g.EdgeCollection(nil, EDGES_COLLECTION_NAME); err != nil {
 		logFatalf("Error fetching edge collection: %v", err)
 	}
-	return g, nodes, edges
+	return g, nodes, edges, db
 }
 
 // establishes connection to DB. Exists on error
@@ -98,7 +98,31 @@ func configureGraph(db driver.Database) (options driver.CreateGraphOptions, node
 	return options, nodes
 }
 
+// get destination of edges  which have FROM: "node"
 func GetEdges(node string, s Server) (err error, neighbors []string) {
+	// search edges which are leaving this node, going to another
+	// Return the node they're going to
+	query := "FOR edge IN edges FILTER edge._from == @node RETURN edge._to"
+	bindVars := map[string]interface{}{
+		"node": VERTICIES_COLLECTION_NAME + "/" + node,
+	}
+	cursor, err := s.DB.Query(context.Background(), query, bindVars)
+	if err != nil {
+		logErr("Error launching query %s: %v", query, err)
+		return err, neighbors
+	}
+	defer cursor.Close()
+	// read out results
+	for cursor.HasMore() {
+		var n string
+		if _, err := cursor.ReadDocument(nil, &n); err != nil {
+			logErr(err.Error())
+		} else {
+			nodeName := strings.TrimPrefix(n, VERTICIES_COLLECTION_NAME+"/")
+			neighbors = append(neighbors, nodeName)
+		}
+
+	}
 	return err, neighbors
 }
 
@@ -118,7 +142,7 @@ func AddEdges(
 		edges = append(edges, Edge{
 			From: VERTICIES_COLLECTION_NAME + "/" + node,
 			To:   VERTICIES_COLLECTION_NAME + "/" + n,
-			Key:  node + "TO" + n,
+			Key:  VERTICIES_COLLECTION_NAME + "-" + node + "TO" + n,
 		})
 	}
 	// add all nodes to vertext collection
