@@ -41,10 +41,13 @@ func ConnectToDB() (g driver.Graph, nodes driver.Collection, edges driver.Collec
 // establishes connection to DB. Exists on error
 func establishConnectionToDb() (error, driver.Database) {
 	// Create an HTTP connection to the database
-	urls := strings.Split(os.Getenv("GRAPH_DB_ARANGO_ENDPOINT"), "|")
-	conn, _ := http.NewConnection(http.ConnectionConfig{
+	urls := []string{os.Getenv("GRAPH_DB_ARANGO_ENDPOINT")}
+	conn, err := http.NewConnection(http.ConnectionConfig{
 		Endpoints: urls,
 	})
+	if err != nil {
+		return fmt.Errorf("Could not create connection to DB: %v", err), nil
+	}
 	// Create a client
 	c, err := driver.NewClient(driver.ClientConfig{
 		Connection: conn,
