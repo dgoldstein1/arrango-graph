@@ -118,7 +118,7 @@ func AddEdges(
 		edges = append(edges, Edge{
 			From: VERTICIES_COLLECTION_NAME + "/" + node,
 			To:   VERTICIES_COLLECTION_NAME + "/" + n,
-			Key:  node + "TO" + n,
+			Key:  VERTICIES_COLLECTION_NAME + "-" + node + "TO" + n,
 		})
 	}
 	// add all nodes to vertext collection

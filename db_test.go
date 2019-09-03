@@ -174,60 +174,67 @@ func TestAddEdgesDB(t *testing.T) {
 }
 
 func TestGetEdgesFromDB(t *testing.T) {
-	// 	// mock out log.Fatalf
-	// 	origLogFatalf := logFatalf
-	// 	defer func() { logFatalf = origLogFatalf }()
-	// 	errors := []string{}
-	// 	logFatalf = func(format string, args ...interface{}) {
-	// 		if len(args) > 0 {
-	// 			errors = append(errors, fmt.Sprintf(format, args))
-	// 		} else {
-	// 			errors = append(errors, format)
-	// 		}
-	// 	}
-	// 	os.Setenv("GRAPH_DB_COLLECTION_NAME", "graph-testing-wikipedia")
-	// 	os.Setenv("GRAPH_DB_ARANGO_ENDPOINTS", "http://localhost:8529")
-	// 	os.Setenv("GRAPH_DB_NAME", "wikipedia-graph-1")
-	// 	g, nodes, edges := ConnectToDB()
-	// 	assert.NotNil(t, g)
-	// 	assert.NotNil(t, nodes)
-	// 	assert.NotNil(t, edges)
-	// 	require.Equal(t, []string{}, errors)
-	// 	defer require.Nil(t, g.Remove(nil))
-	//
-	// 	type Test struct {
-	// 		Before            func()
-	// 		Name              string
-	// 		Node              string
-	// 		ExpectedError     error
-	// 		ExpectedNeighbors []string
-	// 	}
-	//
-	// 	testTable := []Test{
-	// 		Test{
-	// 			Before: func() {
-	// 				nodes.CreateDocuments(nil, []Node{Node{"test1"}, Node{"test2"}})
-	// 				edges.CreateDocuments(nil, []Edge{Edge{"test1", "test2", "test1->test2"}})
-	// 			},
-	// 			Name:              "addes all new edges",
-	// 			Node:              "test1",
-	// 			ExpectedError:     nil,
-	// 			ExpectedNeighbors: []string{"new-node-2", "new-node-3"},
-	// 		},
-	// 	}
-	//
-	// 	s := Server{
-	// 		Nodes: nodes,
-	// 		Edges: edges,
-	// 	}
-	//
-	// 	for _, test := range testTable {
-	// 		t.Run(test.Name, func(t *testing.T) {
-	// 			test.Before()
-	// 			e, neighbors := GetEdges(test.Node, s)
-	// 			assert.Equal(t, test.ExpectedError, e)
-	// 			assert.Equal(t, test.ExpectedNeighbors, neighbors)
-	// 		})
-	// 	}
-	//
+	// mock out log.Fatalf
+	origLogFatalf := logFatalf
+	defer func() { logFatalf = origLogFatalf }()
+	errors := []string{}
+	logFatalf = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			errors = append(errors, fmt.Sprintf(format, args))
+		} else {
+			errors = append(errors, format)
+		}
+	}
+	temp := os.Getenv("GRAPH_DB_NAME")
+	defer os.Setenv("GRAPH_DB_NAME", temp)
+	os.Setenv("GRAPH_DB_NAME", "testing-get-edges-from-graph")
+	g, nodes, edges := ConnectToDB()
+	assert.NotNil(t, g)
+	assert.NotNil(t, nodes)
+	assert.NotNil(t, edges)
+	require.Equal(t, []string{}, errors)
+	defer require.Nil(t, g.Remove(nil))
+
+	type Test struct {
+		Before            func()
+		Name              string
+		Node              string
+		ExpectedError     error
+		ExpectedNeighbors []string
+	}
+
+	testTable := []Test{
+		Test{
+			Before: func() {
+				nodes.CreateDocuments(nil, []Node{Node{"test1"}, Node{"test2"}, Node{"test3"}})
+				edges.CreateDocuments(nil, []Edge{
+					Edge{
+						From: VERTICIES_COLLECTION_NAME + "/test1",
+						To:   VERTICIES_COLLECTION_NAME + "/test2",
+						Key:  VERTICIES_COLLECTION_NAME + "-test1TOtest2",
+					},
+				})
+
+			},
+			Name:              "gets edges of node in graph",
+			Node:              "test1",
+			ExpectedError:     nil,
+			ExpectedNeighbors: []string{"new-node-2", "new-node-3"},
+		},
+	}
+
+	s := Server{
+		Nodes: nodes,
+		Edges: edges,
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Before()
+			e, neighbors := GetEdges(test.Node, s)
+			assert.Equal(t, test.ExpectedError, e)
+			assert.Equal(t, test.ExpectedNeighbors, neighbors)
+		})
+	}
+
 }
