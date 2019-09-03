@@ -49,6 +49,9 @@ func establishConnectionToDb() (error, driver.Database) {
 	c, err := driver.NewClient(driver.ClientConfig{
 		Connection: conn,
 	})
+	if err != nil {
+		return fmt.Errorf("Could not create client driver: %v", err), nil
+	}
 	// try fetching database
 	exists, err := c.DatabaseExists(nil, os.Getenv("GRAPH_DB_NAME"))
 	if err != nil {
